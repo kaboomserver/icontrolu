@@ -1,0 +1,9 @@
+name: iControlU
+main: pw.kaboom.icontrolu.Main
+description: Plugin that allows players to control other players. 
+version: master
+
+commands:
+   icu:
+      description: Control another player's movements, inventory and chat
+      permission: icu.command
