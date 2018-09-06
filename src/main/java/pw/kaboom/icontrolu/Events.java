@@ -48,6 +48,7 @@ class Tick extends BukkitRunnable {
 					target.teleport(controller);
 				}
 
+				target.setAllowFlight(controller.getAllowFlight());
 				target.setExhaustion(controller.getExhaustion());
 				target.setFlying(controller.isFlying());
 				target.setFoodLevel(controller.getFoodLevel());
@@ -161,7 +162,7 @@ class Events implements Listener {
 
 		for (Player otherPlayer: Bukkit.getOnlinePlayers()) {
 			/* Target disconnects */
-			if (main.controllerFor.get(player.getUniqueId()).equals(otherPlayer)) {
+			if (main.controllerFor.containsKey(player.getUniqueId()) && main.controllerFor.get(player.getUniqueId()).equals(otherPlayer)) {
 				main.targetFor.remove(otherPlayer.getUniqueId());
 				main.controllerFor.remove(player.getUniqueId());
 
@@ -188,7 +189,7 @@ class Events implements Listener {
 			}
 
 			/* Controller disconnects */
-			if (main.targetFor.get(player.getUniqueId()).equals(otherPlayer)) {
+			if (main.targetFor.containsKey(player.getUniqueId()) && main.targetFor.get(player.getUniqueId()).equals(otherPlayer)) {
 				main.targetFor.remove(player.getUniqueId());
 				main.controllerFor.remove(otherPlayer.getUniqueId());
 			}
