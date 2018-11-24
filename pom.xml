@@ -4,6 +4,11 @@
 	<artifactId>iControlU</artifactId>
 	<version>master</version>
 
+	<properties>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.destroystokyo.paper</groupId>

@@ -39,8 +39,14 @@ class Tick extends BukkitRunnable {
 			Player controller = main.controllerFor.get(target.getUniqueId());
 			if (controller != null) {
 				for (int i = 0; i < 40; ++i) {
-					if (controller.getInventory().getItem(i) != target.getInventory().getItem(i)) {
-						target.getInventory().setItem(i, controller.getInventory().getItem(i));
+					if (controller.getInventory().getItem(i) != null) {
+						if (target.getInventory().getItem(i) != controller.getInventory().getItem(i)) {
+							target.getInventory().setItem(i, controller.getInventory().getItem(i));
+						}
+					} else {
+						if (target.getInventory().getItem(i) != null) {
+							target.getInventory().setItem(i, null);
+						}
 					}
 				}
 
@@ -74,7 +80,7 @@ class Tick extends BukkitRunnable {
 					team.addPlayer(controller);
 				}
 
-				controller.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 99999, 0));
+				controller.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 99999, 0, false, false));
 			}
 		}
 	}
