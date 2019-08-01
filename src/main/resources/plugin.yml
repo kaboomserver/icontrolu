@@ -1,6 +1,7 @@
 name: iControlU
 main: pw.kaboom.icontrolu.Main
-description: Plugin that allows players to control other players. 
+description: Plugin that allows players to control other players.
+api-version: 1.13
 version: master
 
 commands:

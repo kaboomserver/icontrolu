@@ -36,7 +36,7 @@ public class Main extends JavaPlugin {
 			Player target = Main.targetFor.get(controller.getUniqueId());
 			if (target != null) {
 				for (Player player: Bukkit.getOnlinePlayers()) {
-					player.showPlayer(controller);
+					player.showPlayer(this, controller);
 				}
 
 				Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();

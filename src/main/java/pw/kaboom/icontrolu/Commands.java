@@ -38,6 +38,8 @@ class CommandIcu implements CommandExecutor {
 						controller.sendMessage("Player \"" + target.getName() + "\" is already being controlled");
 					} else if (main.targetFor.containsKey(target.getUniqueId())) {
 						controller.sendMessage("Player \"" + target.getName() + "\" is already controlling another player");
+					} else if (controller.canSee(target) == false) {
+						controller.sendMessage("You may not control this player");
 					} else {
 						controller.teleport(target);
 
@@ -63,13 +65,13 @@ class CommandIcu implements CommandExecutor {
 				Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable() {
 					public void run() {
 						for (Player player: Bukkit.getOnlinePlayers()) {
-							player.showPlayer(controllerRun);
+							player.showPlayer(main, controllerRun);
 						}
 
 						Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 						Team team = scoreboard.getTeam("iControlU_List");
-						if (team != null && team.hasPlayer(controllerRun) == true) {
-							team.removePlayer(controllerRun);
+						if (team != null && team.hasEntry(controllerRun.getName()) == true) {
+							team.removeEntry(controllerRun.getName());
 						}
 
 						controllerRun.removePotionEffect(PotionEffectType.INVISIBILITY);

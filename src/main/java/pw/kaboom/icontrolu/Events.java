@@ -51,7 +51,7 @@ class Tick extends BukkitRunnable {
 				}
 
 				if (target.getHealth() > 0) {
-					target.teleport(controller);
+					target.teleportAsync(controller.getLocation());
 				}
 
 				target.setAllowFlight(controller.getAllowFlight());
@@ -64,7 +64,7 @@ class Tick extends BukkitRunnable {
 				target.setSprinting(controller.isSprinting());
 
 				for (Player player: Bukkit.getOnlinePlayers()) {
-					player.hidePlayer(controller);
+					player.hidePlayer(main, controller);
 				}
 				
 				Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
@@ -76,8 +76,8 @@ class Tick extends BukkitRunnable {
 				team.setCanSeeFriendlyInvisibles​(false);
 				team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
 
-				if (team.hasPlayer(controller) == false) {
-					team.addPlayer(controller);
+				if (team.hasEntry(controller.getName()) == false) {
+					team.addEntry(controller.getName());
 				}
 
 				controller.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 99999, 0, false, false));
@@ -177,13 +177,13 @@ class Events implements Listener {
 				Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable() {
 					public void run() {
 						for (Player allPlayers: Bukkit.getOnlinePlayers()) {
-							allPlayers.showPlayer(controller);
+							allPlayers.showPlayer(main, controller);
 						}
 
 						Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 						Team team = scoreboard.getTeam("iControlU_List");
-						if (team != null && team.hasPlayer(controller) == true) {
-							team.removePlayer(controller);
+						if (team != null && team.hasEntry(controller.getName()) == true) {
+							team.removeEntry(controller.getName());
 						}
 
 						controller.removePotionEffect(PotionEffectType.INVISIBILITY);
@@ -208,7 +208,7 @@ class Events implements Listener {
 
 		if (main.controllerFor.containsKey(player.getUniqueId())) {
 			Player controller = main.controllerFor.get(player.getUniqueId());
-			controller.teleport(player);
+			controller.teleportAsync(player.getLocation());
 		}
 	}
 }
