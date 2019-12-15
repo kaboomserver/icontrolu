@@ -18,8 +18,12 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
+import org.bukkit.plugin.java.JavaPlugin;
+
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import org.bukkit.scheduler.BukkitRunnable;
 
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
@@ -29,24 +33,18 @@ import org.bukkit.scoreboard.Team.OptionStatus;
 import org.bukkit.scheduler.BukkitRunnable;
 
 class Tick extends BukkitRunnable {
-	Main main;
-	Tick(Main main) {
-		this.main = main;
-	}
-
 	public void run() {
 		for (Player target: Bukkit.getOnlinePlayers()) {
-			Player controller = main.controllerFor.get(target.getUniqueId());
+			final Player controller = Main.controllerFor.get(target.getUniqueId());
+
 			if (controller != null) {
-				for (int i = 0; i < 40; ++i) {
+				for (int i = 0; i < controller.getInventory().getSize(); i++) {
 					if (controller.getInventory().getItem(i) != null) {
-						if (target.getInventory().getItem(i) != controller.getInventory().getItem(i)) {
+						if (!controller.getInventory().getItem(i).equals(target.getInventory().getItem(i))) {
 							target.getInventory().setItem(i, controller.getInventory().getItem(i));
 						}
 					} else {
-						if (target.getInventory().getItem(i) != null) {
-							target.getInventory().setItem(i, null);
-						}
+						target.getInventory().setItem(i, null);
 					}
 				}
 
@@ -58,50 +56,56 @@ class Tick extends BukkitRunnable {
 				target.setExhaustion(controller.getExhaustion());
 				target.setFlying(controller.isFlying());
 				target.setFoodLevel(controller.getFoodLevel());
+				target.setMaxHealth(controller.getMaxHealth());
 				target.setHealth(controller.getHealth());
 				target.setLevel(controller.getLevel());
 				target.setSneaking(controller.isSneaking());
 				target.setSprinting(controller.isSprinting());
 
 				for (Player player: Bukkit.getOnlinePlayers()) {
-					player.hidePlayer(main, controller);
+					player.hidePlayer(JavaPlugin.getPlugin(Main.class), controller);
 				}
 				
-				Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-				Team team = scoreboard.getTeam("iControlU_List");
+				final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+				Team team = scoreboard.getTeam("icuDisableCollision");
+
 				if (team == null) {
-					team = scoreboard.registerNewTeam("iControlU_List");
+					team = scoreboard.registerNewTeam("icuDisableCollision");
 				}
 
 				team.setCanSeeFriendlyInvisibles​(false);
 				team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
 
-				if (team.hasEntry(controller.getName()) == false) {
+				if (!team.hasEntry(controller.getName())) {
 					team.addEntry(controller.getName());
 				}
 
-				controller.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 99999, 0, false, false));
+				controller.addPotionEffect(
+					new PotionEffect(
+						PotionEffectType.INVISIBILITY,
+						99999,
+						0,
+						false,
+						false
+					)
+				);
 			}
 		}
 	}
 }
 
 class Events implements Listener {
-	Main main;
-	Events(Main main) {
-		this.main = main;
-	}
-
 	@EventHandler
 	void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
-		Player player = event.getPlayer();
+		final Player player = event.getPlayer();
 
-		if (main.controllerFor.containsKey(player.getUniqueId())) {
+		if (Main.controllerFor.containsKey(player.getUniqueId())) {
 			event.setCancelled(true);
 		}
 
-		if (main.targetFor.containsKey(player.getUniqueId())) {
-			Player target = main.targetFor.get(player.getUniqueId());
+		if (Main.targetFor.containsKey(player.getUniqueId())) {
+			final Player target = Main.targetFor.get(player.getUniqueId());
+
 			target.chat(event.getMessage());
 			event.setCancelled(true);
 		}
@@ -109,105 +113,100 @@ class Events implements Listener {
 
 	@EventHandler
 	void onEntityDamage(EntityDamageEvent event) {
-		Entity player = event.getEntity();
+		final Entity player = event.getEntity();
 
-		if (main.targetFor.containsKey(player.getUniqueId())) {
+		if (Main.targetFor.containsKey(player.getUniqueId())) {
 			event.setCancelled(true);
 		}
 	}
 
-	/*@EventHandler
-	void onPlayerAnimation(PlayerAnimationEvent event) {
-		Player controller = event.getPlayer();
-		Player target = main.targetFor.get(controller.getUniqueId());
-
-		if (target != null) {
-			event.setCancelled(true);
-		}
-	}*/
-
 	@EventHandler
 	void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-		Player player = event.getPlayer();
+		final Player player = event.getPlayer();
 
-		if (main.controllerFor.containsKey(player.getUniqueId())) {
+		if (Main.controllerFor.containsKey(player.getUniqueId())) {
 			event.setCancelled(true);
 		}
 	}
 
 	@EventHandler
 	void onPlayerDropItem(PlayerDropItemEvent event) {
-		Player player = event.getPlayer();
+		final Player player = event.getPlayer();
 
-		if (main.controllerFor.containsKey(player.getUniqueId())) {
+		if (Main.controllerFor.containsKey(player.getUniqueId())) {
 			event.setCancelled(true);
 		}
 	}
 
 	@EventHandler
 	void onPlayerInteract(PlayerInteractEvent event) {
-		Player player = event.getPlayer();
+		final Player player = event.getPlayer();
 
-		if (main.controllerFor.containsKey(player.getUniqueId())) {
+		if (Main.controllerFor.containsKey(player.getUniqueId())) {
 			event.setCancelled(true);
 		}
 	}
 
 	@EventHandler
 	void onPlayerMove(PlayerMoveEvent event) {
-		Player player = event.getPlayer();
+		final Player player = event.getPlayer();
 
-		if (main.controllerFor.containsKey(player.getUniqueId())) {
+		if (Main.controllerFor.containsKey(player.getUniqueId())) {
 			event.setCancelled(true);
 		}
 	}
 
 	@EventHandler
 	void onPlayerQuit(PlayerQuitEvent event) {
-		Player player = event.getPlayer();
+		final Player player = event.getPlayer();
 
 		for (Player otherPlayer: Bukkit.getOnlinePlayers()) {
 			/* Target disconnects */
-			if (main.controllerFor.containsKey(player.getUniqueId()) && main.controllerFor.get(player.getUniqueId()).equals(otherPlayer)) {
-				main.targetFor.remove(otherPlayer.getUniqueId());
-				main.controllerFor.remove(player.getUniqueId());
+			if (Main.controllerFor.containsKey(player.getUniqueId()) &&
+				Main.controllerFor.get(player.getUniqueId()).equals(otherPlayer)) {
+				Main.targetFor.remove(otherPlayer.getUniqueId());
+				Main.controllerFor.remove(player.getUniqueId());
 
 				final Player controller = otherPlayer;
 
-				Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable() {
+				new BukkitRunnable() {
 					public void run() {
 						for (Player allPlayers: Bukkit.getOnlinePlayers()) {
-							allPlayers.showPlayer(main, controller);
+							allPlayers.showPlayer(JavaPlugin.getPlugin(Main.class), controller);
 						}
 
-						Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-						Team team = scoreboard.getTeam("iControlU_List");
-						if (team != null && team.hasEntry(controller.getName()) == true) {
+						final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+						final Team team = scoreboard.getTeam("icuDisableCollision");
+
+						if (team != null &&
+							team.hasEntry(controller.getName()) == true) {
 							team.removeEntry(controller.getName());
 						}
 
 						controller.removePotionEffect(PotionEffectType.INVISIBILITY);
 						controller.sendMessage("You are now visible");
 					}
-				}, 200L);
+				}.runTaskLater(JavaPlugin.getPlugin(Main.class), 200);
 
 				otherPlayer.sendMessage("The player you were controlling has disconnected. You are invisible for 10 seconds.");
 			}
 
 			/* Controller disconnects */
-			if (main.targetFor.containsKey(player.getUniqueId()) && main.targetFor.get(player.getUniqueId()).equals(otherPlayer)) {
-				main.targetFor.remove(player.getUniqueId());
-				main.controllerFor.remove(otherPlayer.getUniqueId());
+			if (Main.targetFor.containsKey(player.getUniqueId()) &&
+				Main.targetFor.get(player.getUniqueId()).equals(otherPlayer)) {
+				Main.targetFor.remove(player.getUniqueId());
+				Main.controllerFor.remove(otherPlayer.getUniqueId());
 			}
 		}
 	}
 
 	@EventHandler
 	void onPlayerRespawn(PlayerRespawnEvent event) {
-		Player player = event.getPlayer();
+		final Player player = event.getPlayer();
 
-		if (main.controllerFor.containsKey(player.getUniqueId())) {
-			Player controller = main.controllerFor.get(player.getUniqueId());
+		if (Main.controllerFor.containsKey(player.getUniqueId())) {
+			final Player controller = Main.controllerFor.get(player.getUniqueId());
+
 			controller.teleportAsync(player.getLocation());
 		}
 	}

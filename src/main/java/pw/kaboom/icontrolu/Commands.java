@@ -10,22 +10,21 @@ import org.bukkit.command.ConsoleCommandSender;
 
 import org.bukkit.entity.Player;
 
+import org.bukkit.plugin.java.JavaPlugin;
+
 import org.bukkit.potion.PotionEffectType;
+
+import org.bukkit.scheduler.BukkitRunnable;
 
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 class CommandIcu implements CommandExecutor {
-	Main main;
-	CommandIcu(Main main) {
-		this.main = main;
-	}
-
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (sender instanceof ConsoleCommandSender) {
 			sender.sendMessage("Command has to be run by a player");
 		} else {
-			Player controller = (Player) sender;
+			final Player controller = (Player) sender;
 
 			if (args.length == 0) {
 				controller.sendMessage(ChatColor.RED + "Usage: /" + label + " <control|stop>");
@@ -33,25 +32,26 @@ class CommandIcu implements CommandExecutor {
 				if (args.length == 1) {
 					controller.sendMessage(ChatColor.RED + "Usage: /" + label + " control <player>");
 				} else {
-					Player target = Bukkit.getPlayer(args[1]);
+					final Player target = Bukkit.getPlayer(args[1]);
+
 					if (target != null) {
 						if (target == controller) {
 							controller.sendMessage("You are already controlling yourself");
-						} else if (main.targetFor.containsKey(controller.getUniqueId())) {
+						} else if (Main.targetFor.containsKey(controller.getUniqueId())) {
 							controller.sendMessage("You are already controlling \"" + target.getName() + "\"");
-						} else if (main.controllerFor.containsKey(target.getUniqueId())) {
+						} else if (Main.controllerFor.containsKey(target.getUniqueId())) {
 							controller.sendMessage("Player \"" + target.getName() + "\" is already being controlled");
-						} else if (main.targetFor.containsKey(target.getUniqueId())) {
+						} else if (Main.targetFor.containsKey(target.getUniqueId())) {
 							controller.sendMessage("Player \"" + target.getName() + "\" is already controlling another player");
-						} else if (controller.canSee(target) == false) {
+						} else if (!controller.canSee(target)) {
 							controller.sendMessage("You may not control this player");
 						} else {
-							controller.teleport(target);
+							controller.teleportAsync(target.getLocation());
 	
 							controller.getInventory().setContents(target.getInventory().getContents());
-	
-							main.targetFor.put(controller.getUniqueId(), target);
-							main.controllerFor.put(target.getUniqueId(), controller);
+
+							Main.targetFor.put(controller.getUniqueId(), target);
+							Main.controllerFor.put(target.getUniqueId(), controller);
 	
 							controller.sendMessage("You are now controlling \"" + target.getName() + "\"");
 						}
@@ -60,30 +60,28 @@ class CommandIcu implements CommandExecutor {
 					}
 				}
 			} else if (args[0].equalsIgnoreCase("stop")) {
-				Player target = main.targetFor.get(controller.getUniqueId());
+				final Player target = Main.targetFor.get(controller.getUniqueId());
 
 				if (target != null) {
-					main.targetFor.remove(controller.getUniqueId());
-					main.controllerFor.remove(target.getUniqueId());
-	
-					final Player controllerRun = controller;
-	
-					Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable() {
+					Main.targetFor.remove(controller.getUniqueId());
+					Main.controllerFor.remove(target.getUniqueId());
+
+					new BukkitRunnable() {
 						public void run() {
 							for (Player player: Bukkit.getOnlinePlayers()) {
-								player.showPlayer(main, controllerRun);
+								player.showPlayer(JavaPlugin.getPlugin(Main.class), controller);
 							}
 	
 							Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-							Team team = scoreboard.getTeam("iControlU_List");
-							if (team != null && team.hasEntry(controllerRun.getName()) == true) {
-								team.removeEntry(controllerRun.getName());
+							Team team = scoreboard.getTeam("icuDisableCollision");
+							if (team != null && team.hasEntry(controller.getName())) {
+								team.removeEntry(controller.getName());
 							}
 	
-							controllerRun.removePotionEffect(PotionEffectType.INVISIBILITY);
-							controllerRun.sendMessage("You are now visible");
+							controller.removePotionEffect(PotionEffectType.INVISIBILITY);
+							controller.sendMessage("You are now visible");
 						}
-					}, 200L);
+					}.runTaskLater(JavaPlugin.getPlugin(Main.class), 200);
 	
 					controller.sendMessage("You are no longer controlling \"" + target.getName() + "\". You are invisible for 10 seconds.");
 				} else {
