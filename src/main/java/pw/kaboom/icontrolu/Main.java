@@ -1,23 +1,17 @@
 package pw.kaboom.icontrolu;
 
-import java.util.HashMap;
-import java.util.UUID;
-
 import org.bukkit.Bukkit;
-
 import org.bukkit.entity.Player;
-
-import org.bukkit.potion.PotionEffectType;
-
 import org.bukkit.plugin.java.JavaPlugin;
-
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-public class Main extends JavaPlugin {
-	static HashMap<UUID, Player> controllerFor = new HashMap<>();
-	static HashMap<UUID, Player> targetFor = new HashMap<>();
+import pw.kaboom.icontrolu.commands.CommandIcu;
+import pw.kaboom.icontrolu.utilities.PlayerList;
 
+public final class Main extends JavaPlugin {
+	@Override
 	public void onEnable() {
 		/* Setup scoreboard team to prevent player collisions */
 		final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
@@ -30,12 +24,13 @@ public class Main extends JavaPlugin {
 		this.getCommand("icu").setExecutor(new CommandIcu());
 
 		new Tick().runTaskTimer(this, 0, 1);
-		this.getServer().getPluginManager().registerEvents(new Events(), this);
+		this.getServer().getPluginManager().registerEvents(new ControlPlayer(), this);
 	}
 
+	@Override
 	public void onDisable() {
 		for (Player controller: Bukkit.getOnlinePlayers()) {
-			final Player target = Main.targetFor.get(controller.getUniqueId());
+			final Player target = PlayerList.getTarget(controller.getUniqueId());
 
 			if (target != null) {
 				for (Player player: Bukkit.getOnlinePlayers()) {

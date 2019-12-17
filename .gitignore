@@ -1,2 +1,6 @@
-.gradle/
+.settings/
+bin/
 target/
+.checkstyle
+.classpath
+.project
