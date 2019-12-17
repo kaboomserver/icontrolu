@@ -5,8 +5,8 @@
 	<version>master</version>
 
 	<properties>
-		<maven.compiler.source>1.0</maven.compiler.source>
-		<maven.compiler.target>1.0</maven.compiler.target>
+		<maven.compiler.source>1.5</maven.compiler.source>
+		<maven.compiler.target>1.5</maven.compiler.target>
 		<maven.test.skip>true</maven.test.skip>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
