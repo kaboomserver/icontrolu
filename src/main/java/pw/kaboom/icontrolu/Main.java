@@ -15,7 +15,7 @@ public final class Main extends JavaPlugin {
 	public void onEnable() {
 		/* Setup scoreboard team to prevent player collisions */
 		final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-		final Team team = scoreboard.getTeam("icuDisableCollision");
+		final Team team = scoreboard.getTeam("icuCollision");
 		if (team != null) {
 			team.unregister();
 		}
@@ -38,7 +38,7 @@ public final class Main extends JavaPlugin {
 				}
 
 				final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-				final Team team = scoreboard.getTeam("icuDisableCollision");
+				final Team team = scoreboard.getTeam("icuCollision");
 
 				if (team != null) {
 					team.unregister();

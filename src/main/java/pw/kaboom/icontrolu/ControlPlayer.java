@@ -63,10 +63,10 @@ class Tick extends BukkitRunnable {
 				}
 
 				final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-				Team team = scoreboard.getTeam("icuDisableCollision");
+				Team team = scoreboard.getTeam("icuCollision");
 
 				if (team == null) {
-					team = scoreboard.registerNewTeam("icuDisableCollision");
+					team = scoreboard.registerNewTeam("icuCollision");
 				}
 
 				team.setCanSeeFriendlyInvisibles(false);
@@ -179,7 +179,7 @@ class ControlPlayer implements Listener {
 						}
 
 						final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-						final Team team = scoreboard.getTeam("icuDisableCollision");
+						final Team team = scoreboard.getTeam("icuCollision");
 
 						if (team != null
 								&& team.hasEntry(controller.getName())) {

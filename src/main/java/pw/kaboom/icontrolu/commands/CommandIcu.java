@@ -67,7 +67,7 @@ public final class CommandIcu implements CommandExecutor {
 					}
 
 					Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-					Team team = scoreboard.getTeam("icuDisableCollision");
+					Team team = scoreboard.getTeam("icuCollision");
 					if (team != null && team.hasEntry(controller.getName())) {
 						team.removeEntry(controller.getName());
 					}
