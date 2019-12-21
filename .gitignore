@@ -1,6 +1,8 @@
+.idea/
 .settings/
 bin/
 target/
 .checkstyle
 .classpath
 .project
+*.iml

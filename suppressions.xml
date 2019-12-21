@@ -5,7 +5,6 @@
 	"http://www.puppycrawl.com/dtds/suppressions_1_0.dtd">
 
 <suppressions>
-	<suppress checks="AvoidStarImport" files="."/>
 	<suppress checks="FileTabCharacter" files="."/>
 	<suppress checks="Javadoc" files="."/>
 	<suppress checks="LineLength" files="."/>
