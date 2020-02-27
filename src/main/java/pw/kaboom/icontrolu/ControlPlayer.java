@@ -1,8 +1,6 @@
 package pw.kaboom.icontrolu;
 
 import org.bukkit.Bukkit;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,7 +23,7 @@ import org.bukkit.scoreboard.Team;
 import pw.kaboom.icontrolu.utilities.PlayerList;
 
 class Tick extends BukkitRunnable {
-	@Override
+	@SuppressWarnings("deprecation")
 	public void run() {
 		for (Player target: Bukkit.getOnlinePlayers()) {
 			final Player controller = PlayerList.getController(target.getUniqueId());
@@ -45,14 +43,15 @@ class Tick extends BukkitRunnable {
 					target.teleportAsync(controller.getLocation());
 				}
 
-				AttributeInstance controllerMaxHealth = target.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-				AttributeInstance targetMaxHealth = target.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-				targetMaxHealth.setBaseValue(controllerMaxHealth.getBaseValue());
-
 				target.setAllowFlight(controller.getAllowFlight());
 				target.setExhaustion(controller.getExhaustion());
 				target.setFlying(controller.isFlying());
 				target.setFoodLevel(controller.getFoodLevel());
+				
+				if (controller.getMaxHealth() > 0) {
+					target.setMaxHealth(controller.getMaxHealth());
+				}
+				
 				target.setHealth(controller.getHealth());
 				target.setLevel(controller.getLevel());
 				target.setSneaking(controller.isSneaking());
@@ -172,7 +171,6 @@ class ControlPlayer implements Listener {
 				final int tickDelay = 200;
 
 				new BukkitRunnable() {
-					@Override
 					public void run() {
 						for (Player allPlayers: Bukkit.getOnlinePlayers()) {
 							allPlayers.showPlayer(JavaPlugin.getPlugin(Main.class), controller);
