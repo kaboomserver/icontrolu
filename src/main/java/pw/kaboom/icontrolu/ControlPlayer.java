@@ -47,11 +47,11 @@ class Tick extends BukkitRunnable {
 				target.setExhaustion(controller.getExhaustion());
 				target.setFlying(controller.isFlying());
 				target.setFoodLevel(controller.getFoodLevel());
-				
+
 				if (controller.getMaxHealth() > 0) {
 					target.setMaxHealth(controller.getMaxHealth());
 				}
-				
+
 				target.setHealth(controller.getHealth());
 				target.setLevel(controller.getLevel());
 				target.setSneaking(controller.isSneaking());
