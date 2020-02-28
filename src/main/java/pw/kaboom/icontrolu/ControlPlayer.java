@@ -23,6 +23,7 @@ import org.bukkit.scoreboard.Team;
 import pw.kaboom.icontrolu.utilities.PlayerList;
 
 class Tick extends BukkitRunnable {
+	@Override
 	@SuppressWarnings("deprecation")
 	public void run() {
 		for (Player target: Bukkit.getOnlinePlayers()) {
@@ -50,9 +51,9 @@ class Tick extends BukkitRunnable {
 
 				if (controller.getMaxHealth() > 0) {
 					target.setMaxHealth(controller.getMaxHealth());
+					target.setHealth(controller.getHealth());
 				}
 
-				target.setHealth(controller.getHealth());
 				target.setLevel(controller.getLevel());
 				target.setSneaking(controller.isSneaking());
 				target.setSprinting(controller.isSprinting());
@@ -171,6 +172,7 @@ class ControlPlayer implements Listener {
 				final int tickDelay = 200;
 
 				new BukkitRunnable() {
+					@Override
 					public void run() {
 						for (Player allPlayers: Bukkit.getOnlinePlayers()) {
 							allPlayers.showPlayer(JavaPlugin.getPlugin(Main.class), controller);
