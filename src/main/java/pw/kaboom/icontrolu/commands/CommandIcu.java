@@ -60,6 +60,7 @@ public final class CommandIcu implements CommandExecutor {
 			final int tickDelay = 200;
 
 			new BukkitRunnable() {
+				@Override
 				public void run() {
 					for (Player player: Bukkit.getOnlinePlayers()) {
 						player.showPlayer(JavaPlugin.getPlugin(Main.class), controller);
@@ -84,6 +85,7 @@ public final class CommandIcu implements CommandExecutor {
 		}
 	}
 
+	@Override
 	public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
 		if (sender instanceof ConsoleCommandSender) {
 			sender.sendMessage("Command has to be run by a player");

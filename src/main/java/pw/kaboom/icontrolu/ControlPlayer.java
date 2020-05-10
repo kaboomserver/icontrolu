@@ -5,14 +5,17 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -107,7 +110,13 @@ class ControlPlayer implements Listener {
 		if (PlayerList.getTarget(player.getUniqueId()) != null) {
 			final Player target = PlayerList.getTarget(player.getUniqueId());
 
-			target.chat(event.getMessage());
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					target.chat(event.getMessage());
+				}
+			}.runTask(JavaPlugin.getPlugin(Main.class));
+
 			event.setCancelled(true);
 		}
 	}
@@ -117,6 +126,15 @@ class ControlPlayer implements Listener {
 		final Entity player = event.getEntity();
 
 		if (PlayerList.getTarget(player.getUniqueId()) != null) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	private void onPlayerAnimation(final PlayerAnimationEvent event) {
+		final Player player = event.getPlayer();
+
+		if (PlayerList.getController(player.getUniqueId()) != null) {
 			event.setCancelled(true);
 		}
 	}
@@ -145,6 +163,18 @@ class ControlPlayer implements Listener {
 
 		if (PlayerList.getController(player.getUniqueId()) != null) {
 			event.setCancelled(true);
+		}
+
+		if ((event.getAction() == Action.LEFT_CLICK_AIR
+				|| event.getAction() == Action.LEFT_CLICK_BLOCK)
+				&& PlayerList.getTarget(player.getUniqueId()) != null) {
+			final Player target = PlayerList.getTarget(player.getUniqueId());
+
+			if (event.getHand() == EquipmentSlot.HAND) {
+				target.swingMainHand();
+			} else if (event.getHand() == EquipmentSlot.OFF_HAND) {
+				target.swingOffHand();
+			}
 		}
 	}
 
