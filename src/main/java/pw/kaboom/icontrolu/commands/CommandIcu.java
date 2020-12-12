@@ -1,5 +1,7 @@
 package pw.kaboom.icontrolu.commands;
 
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -21,8 +23,10 @@ public final class CommandIcu implements CommandExecutor {
 		if (args.length == 1) {
 			controller.sendMessage(ChatColor.RED + "Usage: /" + label + " control <player>");
 		} else {
-			final Player target = Bukkit.getPlayer(args[1]);
-
+			Player target = Bukkit.getPlayer(args[1]);
+			if (target == null && args[1].matches("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})")) {
+				target = Bukkit.getPlayer(UUID.fromString(args[1]));
+			}
 			if (target != null) {
 				if (target == controller) {
 					controller.sendMessage("You are already controlling yourself");
