@@ -104,16 +104,23 @@ class ControlPlayer implements Listener {
 		final Player player = event.getPlayer();
 
 		if (PlayerList.getController(player.getUniqueId()) != null) {
-			event.setCancelled(true);
-		}
+			if (event.getMessage().startsWith("§iControlUChat§")) {
+				final int prefixLength = "§iControlUChat§".length();
 
-		if (PlayerList.getTarget(player.getUniqueId()) != null) {
+				event.setMessage(
+					event.getMessage().substring(prefixLength)
+				);
+			} else {
+				event.setCancelled(true);
+			}
+
+		} else if (PlayerList.getTarget(player.getUniqueId()) != null) {
 			final Player target = PlayerList.getTarget(player.getUniqueId());
 
 			new BukkitRunnable() {
 				@Override
 				public void run() {
-					target.chat(event.getMessage());
+					target.chat("§iControlUChat§" + event.getMessage());  // Add prefix to prevent messages from being cancelled
 				}
 			}.runTask(JavaPlugin.getPlugin(Main.class));
 
@@ -163,9 +170,8 @@ class ControlPlayer implements Listener {
 
 		if (PlayerList.getController(player.getUniqueId()) != null) {
 			event.setCancelled(true);
-		}
 
-		if ((event.getAction() == Action.LEFT_CLICK_AIR
+		} else if ((event.getAction() == Action.LEFT_CLICK_AIR
 				|| event.getAction() == Action.LEFT_CLICK_BLOCK)
 				&& PlayerList.getTarget(player.getUniqueId()) != null) {
 			final Player target = PlayerList.getTarget(player.getUniqueId());
@@ -192,9 +198,11 @@ class ControlPlayer implements Listener {
 		final Player player = event.getPlayer();
 
 		for (Player otherPlayer: Bukkit.getOnlinePlayers()) {
-			/* Target disconnects */
 			if (PlayerList.getController(player.getUniqueId()) != null
 					&& PlayerList.getController(player.getUniqueId()).equals(otherPlayer)) {
+				/*
+				  Target disconnects
+				  */
 				PlayerList.removeTarget(otherPlayer.getUniqueId());
 				PlayerList.removeController(player.getUniqueId());
 
@@ -222,11 +230,12 @@ class ControlPlayer implements Listener {
 				}.runTaskLater(JavaPlugin.getPlugin(Main.class), tickDelay);
 
 				otherPlayer.sendMessage("The player you were controlling has disconnected. You are invisible for 10 seconds.");
-			}
 
-			/* Controller disconnects */
-			if (PlayerList.getTarget(player.getUniqueId()) != null
+			} else if (PlayerList.getTarget(player.getUniqueId()) != null
 					&& PlayerList.getTarget(player.getUniqueId()).equals(otherPlayer)) {
+				/*
+				  Controller disconnects
+				  */
 				PlayerList.removeTarget(player.getUniqueId());
 				PlayerList.removeController(otherPlayer.getUniqueId());
 			}
