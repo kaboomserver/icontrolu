@@ -106,19 +106,6 @@ class ControlPlayer implements Listener {
 		if (PlayerList.getController(player.getUniqueId()) != null) {
 			event.setCancelled(true);
 		}
-
-		if (PlayerList.getTarget(player.getUniqueId()) != null) {
-			final Player target = PlayerList.getTarget(player.getUniqueId());
-
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					target.chat(event.getMessage());
-				}
-			}.runTask(JavaPlugin.getPlugin(Main.class));
-
-			event.setCancelled(true);
-		}
 	}
 
 	@EventHandler
