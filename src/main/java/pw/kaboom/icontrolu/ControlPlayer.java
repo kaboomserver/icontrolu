@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -29,19 +30,11 @@ class Tick extends BukkitRunnable {
 	@Override
 	@SuppressWarnings("deprecation")
 	public void run() {
-		for (Player target: Bukkit.getOnlinePlayers()) {
+		for (Player target : Bukkit.getOnlinePlayers()) {
 			final Player controller = PlayerList.getController(target.getUniqueId());
 
 			if (controller != null) {
-				for (int i = 0; i < controller.getInventory().getSize(); i++) {
-					if (controller.getInventory().getItem(i) != null) {
-						if (!controller.getInventory().getItem(i).equals(target.getInventory().getItem(i))) {
-							target.getInventory().setItem(i, controller.getInventory().getItem(i));
-						}
-					} else {
-						target.getInventory().setItem(i, null);
-					}
-				}
+				target.getInventory().setContents(new ItemStack[0]);
 
 				if (target.getHealth() > 0) {
 					target.teleportAsync(controller.getLocation());
@@ -61,7 +54,7 @@ class Tick extends BukkitRunnable {
 				target.setSneaking(controller.isSneaking());
 				target.setSprinting(controller.isSprinting());
 
-				for (Player player: Bukkit.getOnlinePlayers()) {
+				for (Player player : Bukkit.getOnlinePlayers()) {
 					player.hidePlayer(JavaPlugin.getPlugin(Main.class), controller);
 				}
 
@@ -85,14 +78,7 @@ class Tick extends BukkitRunnable {
 				final boolean particles = false;
 
 				controller.addPotionEffect(
-					new PotionEffect(
-						PotionEffectType.INVISIBILITY,
-						duration,
-						amplifier,
-						ambient,
-						particles
-					)
-				);
+						new PotionEffect(PotionEffectType.INVISIBILITY, duration, amplifier, ambient, particles));
 			}
 		}
 	}
@@ -107,9 +93,7 @@ class ControlPlayer implements Listener {
 			if (event.getMessage().startsWith("§iControlUChat§")) {
 				final int prefixLength = "§iControlUChat§".length();
 
-				event.setMessage(
-					event.getMessage().substring(prefixLength)
-				);
+				event.setMessage(event.getMessage().substring(prefixLength));
 			} else {
 				event.setCancelled(true);
 			}
@@ -120,7 +104,8 @@ class ControlPlayer implements Listener {
 			new BukkitRunnable() {
 				@Override
 				public void run() {
-					target.chat("§iControlUChat§" + event.getMessage());  // Add prefix to prevent messages from being cancelled
+					target.chat("§iControlUChat§" + event.getMessage()); // Add prefix to prevent messages from being
+																			// cancelled
 				}
 			}.runTask(JavaPlugin.getPlugin(Main.class));
 
@@ -171,8 +156,7 @@ class ControlPlayer implements Listener {
 		if (PlayerList.getController(player.getUniqueId()) != null) {
 			event.setCancelled(true);
 
-		} else if ((event.getAction() == Action.LEFT_CLICK_AIR
-				|| event.getAction() == Action.LEFT_CLICK_BLOCK)
+		} else if ((event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK)
 				&& PlayerList.getTarget(player.getUniqueId()) != null) {
 			final Player target = PlayerList.getTarget(player.getUniqueId());
 
@@ -197,12 +181,12 @@ class ControlPlayer implements Listener {
 	private void onPlayerQuit(final PlayerQuitEvent event) {
 		final Player player = event.getPlayer();
 
-		for (Player otherPlayer: Bukkit.getOnlinePlayers()) {
+		for (Player otherPlayer : Bukkit.getOnlinePlayers()) {
 			if (PlayerList.getController(player.getUniqueId()) != null
 					&& PlayerList.getController(player.getUniqueId()).equals(otherPlayer)) {
 				/*
-				  Target disconnects
-				  */
+				 * Target disconnects
+				 */
 				PlayerList.removeTarget(otherPlayer.getUniqueId());
 				PlayerList.removeController(player.getUniqueId());
 
@@ -212,15 +196,14 @@ class ControlPlayer implements Listener {
 				new BukkitRunnable() {
 					@Override
 					public void run() {
-						for (Player allPlayers: Bukkit.getOnlinePlayers()) {
+						for (Player allPlayers : Bukkit.getOnlinePlayers()) {
 							allPlayers.showPlayer(JavaPlugin.getPlugin(Main.class), controller);
 						}
 
 						final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 						final Team team = scoreboard.getTeam("icuCollision");
 
-						if (team != null
-								&& team.hasEntry(controller.getName())) {
+						if (team != null && team.hasEntry(controller.getName())) {
 							team.removeEntry(controller.getName());
 						}
 
@@ -229,13 +212,14 @@ class ControlPlayer implements Listener {
 					}
 				}.runTaskLater(JavaPlugin.getPlugin(Main.class), tickDelay);
 
-				otherPlayer.sendMessage("The player you were controlling has disconnected. You are invisible for 10 seconds.");
+				otherPlayer.sendMessage(
+						"The player you were controlling has disconnected. You are invisible for 10 seconds.");
 
 			} else if (PlayerList.getTarget(player.getUniqueId()) != null
 					&& PlayerList.getTarget(player.getUniqueId()).equals(otherPlayer)) {
 				/*
-				  Controller disconnects
-				  */
+				 * Controller disconnects
+				 */
 				PlayerList.removeTarget(player.getUniqueId());
 				PlayerList.removeController(otherPlayer.getUniqueId());
 			}
