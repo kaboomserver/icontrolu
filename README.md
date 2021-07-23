@@ -1,6 +1,6 @@
 # iControlU
 
-Weapons is a Bukkit plugin that allows players to control other players.
+iControlU is a Bukkit plugin that allows players to control other players.
 
 The plugin is created for the Kaboom server.
 
