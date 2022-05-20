@@ -26,230 +26,230 @@ import org.bukkit.scoreboard.Team;
 import pw.kaboom.icontrolu.utilities.PlayerList;
 
 class Tick extends BukkitRunnable {
-	@Override
-	@SuppressWarnings("deprecation")
-	public void run() {
-		for (Player target: Bukkit.getOnlinePlayers()) {
-			final Player controller = PlayerList.getController(target.getUniqueId());
+    @Override
+    @SuppressWarnings("deprecation")
+    public void run() {
+        for (Player target: Bukkit.getOnlinePlayers()) {
+            final Player controller = PlayerList.getController(target.getUniqueId());
 
-			if (controller != null) {
-				for (int i = 0; i < controller.getInventory().getSize(); i++) {
-					if (controller.getInventory().getItem(i) != null) {
-						if (!controller.getInventory().getItem(i).equals(target.getInventory().getItem(i))) {
-							target.getInventory().setItem(i, controller.getInventory().getItem(i));
-						}
-					} else {
-						target.getInventory().setItem(i, null);
-					}
-				}
+            if (controller != null) {
+                for (int i = 0; i < controller.getInventory().getSize(); i++) {
+                    if (controller.getInventory().getItem(i) != null) {
+                        if (!controller.getInventory().getItem(i).equals(target.getInventory().getItem(i))) {
+                            target.getInventory().setItem(i, controller.getInventory().getItem(i));
+                        }
+                    } else {
+                        target.getInventory().setItem(i, null);
+                    }
+                }
 
-				if (target.getHealth() > 0) {
-					target.teleportAsync(controller.getLocation());
-				}
+                if (target.getHealth() > 0) {
+                    target.teleportAsync(controller.getLocation());
+                }
 
-				target.setAllowFlight(controller.getAllowFlight());
-				target.setExhaustion(controller.getExhaustion());
-				target.setFlying(controller.isFlying());
-				target.setFoodLevel(controller.getFoodLevel());
+                target.setAllowFlight(controller.getAllowFlight());
+                target.setExhaustion(controller.getExhaustion());
+                target.setFlying(controller.isFlying());
+                target.setFoodLevel(controller.getFoodLevel());
 
-				if (controller.getMaxHealth() > 0) {
-					target.setMaxHealth(controller.getMaxHealth());
-					target.setHealth(controller.getHealth());
-				}
+                if (controller.getMaxHealth() > 0) {
+                    target.setMaxHealth(controller.getMaxHealth());
+                    target.setHealth(controller.getHealth());
+                }
 
-				target.setLevel(controller.getLevel());
-				target.setSneaking(controller.isSneaking());
-				target.setSprinting(controller.isSprinting());
+                target.setLevel(controller.getLevel());
+                target.setSneaking(controller.isSneaking());
+                target.setSprinting(controller.isSprinting());
 
-				for (Player player: Bukkit.getOnlinePlayers()) {
-					player.hidePlayer(JavaPlugin.getPlugin(Main.class), controller);
-				}
+                for (Player player: Bukkit.getOnlinePlayers()) {
+                    player.hidePlayer(JavaPlugin.getPlugin(Main.class), controller);
+                }
 
-				final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-				Team team = scoreboard.getTeam("icuCollision");
+                final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+                Team team = scoreboard.getTeam("icuCollision");
 
-				if (team == null) {
-					team = scoreboard.registerNewTeam("icuCollision");
-				}
+                if (team == null) {
+                    team = scoreboard.registerNewTeam("icuCollision");
+                }
 
-				team.setCanSeeFriendlyInvisibles(false);
-				team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+                team.setCanSeeFriendlyInvisibles(false);
+                team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
 
-				if (!team.hasEntry(controller.getName())) {
-					team.addEntry(controller.getName());
-				}
+                if (!team.hasEntry(controller.getName())) {
+                    team.addEntry(controller.getName());
+                }
 
-				final int duration = 99999;
-				final int amplifier = 0;
-				final boolean ambient = false;
-				final boolean particles = false;
+                final int duration = 99999;
+                final int amplifier = 0;
+                final boolean ambient = false;
+                final boolean particles = false;
 
-				controller.addPotionEffect(
-					new PotionEffect(
-						PotionEffectType.INVISIBILITY,
-						duration,
-						amplifier,
-						ambient,
-						particles
-					)
-				);
-			}
-		}
-	}
+                controller.addPotionEffect(
+                    new PotionEffect(
+                        PotionEffectType.INVISIBILITY,
+                        duration,
+                        amplifier,
+                        ambient,
+                        particles
+                    )
+                );
+            }
+        }
+    }
 }
 
 class ControlPlayer implements Listener {
-	@EventHandler
-	private void onAsyncPlayerChat(final AsyncPlayerChatEvent event) {
-		final Player player = event.getPlayer();
+    @EventHandler
+    private void onAsyncPlayerChat(final AsyncPlayerChatEvent event) {
+        final Player player = event.getPlayer();
 
-		if (PlayerList.getController(player.getUniqueId()) != null) {
-			if (event.getMessage().startsWith("§iControlUChat§")) {
-				final int prefixLength = "§iControlUChat§".length();
+        if (PlayerList.getController(player.getUniqueId()) != null) {
+            if (event.getMessage().startsWith("§iControlUChat§")) {
+                final int prefixLength = "§iControlUChat§".length();
 
-				event.setMessage(
-					event.getMessage().substring(prefixLength)
-				);
-			} else {
-				event.setCancelled(true);
-			}
+                event.setMessage(
+                    event.getMessage().substring(prefixLength)
+                );
+            } else {
+                event.setCancelled(true);
+            }
 
-		} else if (PlayerList.getTarget(player.getUniqueId()) != null) {
-			final Player target = PlayerList.getTarget(player.getUniqueId());
+        } else if (PlayerList.getTarget(player.getUniqueId()) != null) {
+            final Player target = PlayerList.getTarget(player.getUniqueId());
 
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					target.chat("§iControlUChat§" + event.getMessage());  // Add prefix to prevent messages from being cancelled
-				}
-			}.runTask(JavaPlugin.getPlugin(Main.class));
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    target.chat("§iControlUChat§" + event.getMessage());  // Add prefix to prevent messages from being cancelled
+                }
+            }.runTask(JavaPlugin.getPlugin(Main.class));
 
-			event.setCancelled(true);
-		}
-	}
+            event.setCancelled(true);
+        }
+    }
 
-	@EventHandler
-	private void onEntityDamage(final EntityDamageEvent event) {
-		final Entity player = event.getEntity();
+    @EventHandler
+    private void onEntityDamage(final EntityDamageEvent event) {
+        final Entity player = event.getEntity();
 
-		if (PlayerList.getTarget(player.getUniqueId()) != null) {
-			event.setCancelled(true);
-		}
-	}
+        if (PlayerList.getTarget(player.getUniqueId()) != null) {
+            event.setCancelled(true);
+        }
+    }
 
-	@EventHandler
-	private void onPlayerAnimation(final PlayerAnimationEvent event) {
-		final Player player = event.getPlayer();
+    @EventHandler
+    private void onPlayerAnimation(final PlayerAnimationEvent event) {
+        final Player player = event.getPlayer();
 
-		if (PlayerList.getController(player.getUniqueId()) != null) {
-			event.setCancelled(true);
-		}
-	}
+        if (PlayerList.getController(player.getUniqueId()) != null) {
+            event.setCancelled(true);
+        }
+    }
 
-	@EventHandler
-	private void onPlayerCommandPreprocess(final PlayerCommandPreprocessEvent event) {
-		final Player player = event.getPlayer();
+    @EventHandler
+    private void onPlayerCommandPreprocess(final PlayerCommandPreprocessEvent event) {
+        final Player player = event.getPlayer();
 
-		if (PlayerList.getController(player.getUniqueId()) != null) {
-			event.setCancelled(true);
-		}
-	}
+        if (PlayerList.getController(player.getUniqueId()) != null) {
+            event.setCancelled(true);
+        }
+    }
 
-	@EventHandler
-	private void onPlayerDropItem(final PlayerDropItemEvent event) {
-		final Player player = event.getPlayer();
+    @EventHandler
+    private void onPlayerDropItem(final PlayerDropItemEvent event) {
+        final Player player = event.getPlayer();
 
-		if (PlayerList.getController(player.getUniqueId()) != null) {
-			event.setCancelled(true);
-		}
-	}
+        if (PlayerList.getController(player.getUniqueId()) != null) {
+            event.setCancelled(true);
+        }
+    }
 
-	@EventHandler
-	private void onPlayerInteract(final PlayerInteractEvent event) {
-		final Player player = event.getPlayer();
+    @EventHandler
+    private void onPlayerInteract(final PlayerInteractEvent event) {
+        final Player player = event.getPlayer();
 
-		if (PlayerList.getController(player.getUniqueId()) != null) {
-			event.setCancelled(true);
+        if (PlayerList.getController(player.getUniqueId()) != null) {
+            event.setCancelled(true);
 
-		} else if ((event.getAction() == Action.LEFT_CLICK_AIR
-				|| event.getAction() == Action.LEFT_CLICK_BLOCK)
-				&& PlayerList.getTarget(player.getUniqueId()) != null) {
-			final Player target = PlayerList.getTarget(player.getUniqueId());
+        } else if ((event.getAction() == Action.LEFT_CLICK_AIR
+                || event.getAction() == Action.LEFT_CLICK_BLOCK)
+                && PlayerList.getTarget(player.getUniqueId()) != null) {
+            final Player target = PlayerList.getTarget(player.getUniqueId());
 
-			if (event.getHand() == EquipmentSlot.HAND) {
-				target.swingMainHand();
-			} else if (event.getHand() == EquipmentSlot.OFF_HAND) {
-				target.swingOffHand();
-			}
-		}
-	}
+            if (event.getHand() == EquipmentSlot.HAND) {
+                target.swingMainHand();
+            } else if (event.getHand() == EquipmentSlot.OFF_HAND) {
+                target.swingOffHand();
+            }
+        }
+    }
 
-	@EventHandler
-	private void onPlayerMove(final PlayerMoveEvent event) {
-		final Player player = event.getPlayer();
+    @EventHandler
+    private void onPlayerMove(final PlayerMoveEvent event) {
+        final Player player = event.getPlayer();
 
-		if (PlayerList.getController(player.getUniqueId()) != null) {
-			event.setCancelled(true);
-		}
-	}
+        if (PlayerList.getController(player.getUniqueId()) != null) {
+            event.setCancelled(true);
+        }
+    }
 
-	@EventHandler
-	private void onPlayerQuit(final PlayerQuitEvent event) {
-		final Player player = event.getPlayer();
+    @EventHandler
+    private void onPlayerQuit(final PlayerQuitEvent event) {
+        final Player player = event.getPlayer();
 
-		for (Player otherPlayer: Bukkit.getOnlinePlayers()) {
-			if (PlayerList.getController(player.getUniqueId()) != null
-					&& PlayerList.getController(player.getUniqueId()).equals(otherPlayer)) {
-				/*
-				  Target disconnects
-				  */
-				PlayerList.removeTarget(otherPlayer.getUniqueId());
-				PlayerList.removeController(player.getUniqueId());
+        for (Player otherPlayer: Bukkit.getOnlinePlayers()) {
+            if (PlayerList.getController(player.getUniqueId()) != null
+                    && PlayerList.getController(player.getUniqueId()).equals(otherPlayer)) {
+                /*
+                  Target disconnects
+                  */
+                PlayerList.removeTarget(otherPlayer.getUniqueId());
+                PlayerList.removeController(player.getUniqueId());
 
-				final Player controller = otherPlayer;
-				final int tickDelay = 200;
+                final Player controller = otherPlayer;
+                final int tickDelay = 200;
 
-				new BukkitRunnable() {
-					@Override
-					public void run() {
-						for (Player allPlayers: Bukkit.getOnlinePlayers()) {
-							allPlayers.showPlayer(JavaPlugin.getPlugin(Main.class), controller);
-						}
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        for (Player allPlayers: Bukkit.getOnlinePlayers()) {
+                            allPlayers.showPlayer(JavaPlugin.getPlugin(Main.class), controller);
+                        }
 
-						final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-						final Team team = scoreboard.getTeam("icuCollision");
+                        final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+                        final Team team = scoreboard.getTeam("icuCollision");
 
-						if (team != null
-								&& team.hasEntry(controller.getName())) {
-							team.removeEntry(controller.getName());
-						}
+                        if (team != null
+                                && team.hasEntry(controller.getName())) {
+                            team.removeEntry(controller.getName());
+                        }
 
-						controller.removePotionEffect(PotionEffectType.INVISIBILITY);
-						controller.sendMessage("You are now visible");
-					}
-				}.runTaskLater(JavaPlugin.getPlugin(Main.class), tickDelay);
+                        controller.removePotionEffect(PotionEffectType.INVISIBILITY);
+                        controller.sendMessage("You are now visible");
+                    }
+                }.runTaskLater(JavaPlugin.getPlugin(Main.class), tickDelay);
 
-				otherPlayer.sendMessage("The player you were controlling has disconnected. You are invisible for 10 seconds.");
+                otherPlayer.sendMessage("The player you were controlling has disconnected. You are invisible for 10 seconds.");
 
-			} else if (PlayerList.getTarget(player.getUniqueId()) != null
-					&& PlayerList.getTarget(player.getUniqueId()).equals(otherPlayer)) {
-				/*
-				  Controller disconnects
-				  */
-				PlayerList.removeTarget(player.getUniqueId());
-				PlayerList.removeController(otherPlayer.getUniqueId());
-			}
-		}
-	}
+            } else if (PlayerList.getTarget(player.getUniqueId()) != null
+                    && PlayerList.getTarget(player.getUniqueId()).equals(otherPlayer)) {
+                /*
+                  Controller disconnects
+                  */
+                PlayerList.removeTarget(player.getUniqueId());
+                PlayerList.removeController(otherPlayer.getUniqueId());
+            }
+        }
+    }
 
-	@EventHandler
-	private void onPlayerRespawn(final PlayerRespawnEvent event) {
-		final Player player = event.getPlayer();
+    @EventHandler
+    private void onPlayerRespawn(final PlayerRespawnEvent event) {
+        final Player player = event.getPlayer();
 
-		if (PlayerList.getController(player.getUniqueId()) != null) {
-			final Player controller = PlayerList.getController(player.getUniqueId());
+        if (PlayerList.getController(player.getUniqueId()) != null) {
+            final Player controller = PlayerList.getController(player.getUniqueId());
 
-			controller.teleportAsync(player.getLocation());
-		}
-	}
+            controller.teleportAsync(player.getLocation());
+        }
+    }
 }
