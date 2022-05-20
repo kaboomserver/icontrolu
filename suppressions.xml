@@ -8,5 +8,4 @@
 	<suppress checks="FileTabCharacter" files="."/>
 	<suppress checks="Javadoc" files="."/>
 	<suppress checks="LineLength" files="."/>
-	<suppress checks="NewlineAtEndOfFile" files="."/>
 </suppressions>
