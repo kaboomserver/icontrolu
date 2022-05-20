@@ -41,9 +41,8 @@
                             <goal>check</goal>
                         </goals>
                         <configuration>
-                            <suppressionsLocation>
-                                suppressions.xml
-                            </suppressionsLocation>
+                            <configLocation>checkstyle.xml</configLocation>
+                            <suppressionsLocation>suppressions.xml</suppressionsLocation>
                             <failOnViolation>true</failOnViolation>
                         </configuration>
                     </execution>

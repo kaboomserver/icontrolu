@@ -45,7 +45,8 @@ public final class Main extends JavaPlugin {
                 }
 
                 controller.removePotionEffect(PotionEffectType.INVISIBILITY);
-                controller.sendMessage("You are no longer controlling \"" + target.getName() + "\" due to server reload");
+                controller.sendMessage("You are no longer controlling \"" + target.getName()
+                                       + "\" due to server reload");
             }
         }
     }

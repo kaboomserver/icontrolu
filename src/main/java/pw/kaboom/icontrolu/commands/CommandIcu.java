@@ -33,11 +33,14 @@ public final class CommandIcu implements CommandExecutor {
                 if (target == controller) {
                     controller.sendMessage("You are already controlling yourself");
                 } else if (PlayerList.getTarget(controller.getUniqueId()) != null) {
-                    controller.sendMessage("You are already controlling \"" + target.getName() + "\"");
+                    controller.sendMessage("You are already controlling \""
+                                           + target.getName() + "\"");
                 } else if (PlayerList.getController(target.getUniqueId()) != null) {
-                    controller.sendMessage("Player \"" + target.getName() + "\" is already being controlled");
+                    controller.sendMessage("Player \"" + target.getName()
+                                           + "\" is already being controlled");
                 } else if (PlayerList.getTarget(target.getUniqueId()) != null) {
-                    controller.sendMessage("Player \"" + target.getName() + "\" is already controlling another player");
+                    controller.sendMessage("Player \"" + target.getName()
+                                           + "\" is already controlling another player");
                 } else if (!controller.canSee(target)) {
                     controller.sendMessage("You may not control this player");
                 } else {
@@ -85,14 +88,16 @@ public final class CommandIcu implements CommandExecutor {
 
             final int seconds = tickDelay / 20;
 
-            controller.sendMessage("You are no longer controlling \"" + target.getName() + "\". You are invisible for " + seconds + " seconds.");
+            controller.sendMessage("You are no longer controlling \"" + target.getName()
+                                   + "\". You are invisible for " + seconds + " seconds.");
         } else {
             controller.sendMessage("You are not controlling anyone at the moment");
         }
     }
 
     @Override
-    public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
+    public boolean onCommand(final CommandSender sender, final Command command, final String label,
+                             final String[] args) {
         if (sender instanceof ConsoleCommandSender) {
             sender.sendMessage("Command has to be run by a player");
             return true;

@@ -35,7 +35,8 @@ class Tick extends BukkitRunnable {
             if (controller != null) {
                 for (int i = 0; i < controller.getInventory().getSize(); i++) {
                     if (controller.getInventory().getItem(i) != null) {
-                        if (!controller.getInventory().getItem(i).equals(target.getInventory().getItem(i))) {
+                        if (!controller.getInventory().getItem(i).equals(
+                                target.getInventory().getItem(i))) {
                             target.getInventory().setItem(i, controller.getInventory().getItem(i));
                         }
                     } else {
@@ -120,7 +121,8 @@ class ControlPlayer implements Listener {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    target.chat("§iControlUChat§" + event.getMessage());  // Add prefix to prevent messages from being cancelled
+                    // Add prefix to prevent messages from being cancelled
+                    target.chat("§iControlUChat§" + event.getMessage());
                 }
             }.runTask(JavaPlugin.getPlugin(Main.class));
 
@@ -216,7 +218,8 @@ class ControlPlayer implements Listener {
                             allPlayers.showPlayer(JavaPlugin.getPlugin(Main.class), controller);
                         }
 
-                        final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+                        final Scoreboard scoreboard = Bukkit.getScoreboardManager()
+                            .getMainScoreboard();
                         final Team team = scoreboard.getTeam("icuCollision");
 
                         if (team != null
@@ -229,7 +232,8 @@ class ControlPlayer implements Listener {
                     }
                 }.runTaskLater(JavaPlugin.getPlugin(Main.class), tickDelay);
 
-                otherPlayer.sendMessage("The player you were controlling has disconnected. You are invisible for 10 seconds.");
+                otherPlayer.sendMessage("The player you were controlling has disconnected. "
+                                        + "You are invisible for 10 seconds.");
 
             } else if (PlayerList.getTarget(player.getUniqueId()) != null
                     && PlayerList.getTarget(player.getUniqueId()).equals(otherPlayer)) {
