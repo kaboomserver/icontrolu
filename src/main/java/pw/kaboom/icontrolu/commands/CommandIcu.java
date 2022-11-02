@@ -24,7 +24,7 @@ public final class CommandIcu implements CommandExecutor {
     private void controlCommand(final Player controller, final String label, final String[] args) {
         if (args.length == 1) {
             controller.sendMessage(Component
-                .text("Usage: /" + label + " <control|stop>", NamedTextColor.RED));
+                .text("Usage: /" + label + " control <player>", NamedTextColor.RED));
         } else {
             Player target = Bukkit.getPlayer(args[1]);
 
