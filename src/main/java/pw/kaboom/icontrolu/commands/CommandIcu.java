@@ -15,13 +15,17 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+
 import pw.kaboom.icontrolu.Main;
 import pw.kaboom.icontrolu.utilities.PlayerList;
 
 public final class CommandIcu implements CommandExecutor {
     private void controlCommand(final Player controller, final String label, final String[] args) {
         if (args.length == 1) {
-            controller.sendMessage(ChatColor.RED + "Usage: /" + label + " control <player>");
+            controller.sendMessage(Component
+                .text("Usage: /" + label + " <control|stop>", NamedTextColor.RED));
         } else {
             Player target = Bukkit.getPlayer(args[1]);
 
@@ -31,18 +35,27 @@ public final class CommandIcu implements CommandExecutor {
 
             if (target != null) {
                 if (target == controller) {
-                    controller.sendMessage("You are already controlling yourself");
+                    controller.sendMessage(Component.text("You are already controlling yourself"));
                 } else if (PlayerList.getTarget(controller.getUniqueId()) != null) {
-                    controller.sendMessage("You are already controlling \""
-                                           + target.getName() + "\"");
+                    controller.sendMessage(
+                        Component.text("You are already controlling \"")
+                            .append(Component.text(target.getName()))
+                            .append(Component.text("\""))
+                        );
                 } else if (PlayerList.getController(target.getUniqueId()) != null) {
-                    controller.sendMessage("Player \"" + target.getName()
-                                           + "\" is already being controlled");
+                    controller.sendMessage(
+                        Component.text("Player \"")
+                            .append(Component.text(target.getName()))
+                            .append(Component.text("\" is already being controlled"))
+                    );
                 } else if (PlayerList.getTarget(target.getUniqueId()) != null) {
-                    controller.sendMessage("Player \"" + target.getName()
-                                           + "\" is already controlling another player");
+                    controller.sendMessage(
+                        Component.text("Player \"")
+                            .append(Component.text(target.getName()))
+                            .append(Component.text("\" is already controlling another player"))
+                    );
                 } else if (!controller.canSee(target)) {
-                    controller.sendMessage("You may not control this player");
+                    controller.sendMessage(Component.text("You may not control this player"));
                 } else {
                     controller.teleportAsync(target.getLocation());
 
@@ -51,10 +64,18 @@ public final class CommandIcu implements CommandExecutor {
                     PlayerList.setTarget(controller.getUniqueId(), target);
                     PlayerList.setController(target.getUniqueId(), controller);
 
-                    controller.sendMessage("You are now controlling \"" + target.getName() + "\"");
+                    controller.sendMessage(
+                        Component.text("You are now controlling \"")
+                            .append(Component.text(target.getName()))
+                            .append(Component.text("\""))
+                    );
                 }
             } else {
-                controller.sendMessage("Player \"" + args[1] + "\" not found");
+                controller.sendMessage(
+                    Component.text("Player \"")
+                        .append(Component.text(args[1]))
+                        .append(Component.text("\" not found"))
+                );
             }
         }
     }
@@ -82,16 +103,21 @@ public final class CommandIcu implements CommandExecutor {
                     }
 
                     controller.removePotionEffect(PotionEffectType.INVISIBILITY);
-                    controller.sendMessage("You are now visible");
+                    controller.sendMessage(Component.text("You are now visible"));
                 }
             }.runTaskLater(JavaPlugin.getPlugin(Main.class), tickDelay);
 
             final int seconds = tickDelay / 20;
 
-            controller.sendMessage("You are no longer controlling \"" + target.getName()
-                                   + "\". You are invisible for " + seconds + " seconds.");
+            controller.sendMessage(
+                Component.text("You are no longer controlling \"")
+                    .append(Component.text(target.getName()))
+                    .append(Component.text("\". You are invisible for "))
+                    .append(Component.text(seconds))
+                    .append(Component.text(" seconds."))
+            );
         } else {
-            controller.sendMessage("You are not controlling anyone at the moment");
+            controller.sendMessage(Component.text("You are not controlling anyone at the moment"));
         }
     }
 
@@ -99,14 +125,15 @@ public final class CommandIcu implements CommandExecutor {
     public boolean onCommand(final CommandSender sender, final Command command, final String label,
                              final String[] args) {
         if (sender instanceof ConsoleCommandSender) {
-            sender.sendMessage("Command has to be run by a player");
+            sender.sendMessage(Component.text("Command has to be run by a player"));
             return true;
         }
 
         final Player controller = (Player) sender;
 
         if (args.length == 0) {
-            controller.sendMessage(ChatColor.RED + "Usage: /" + label + " <control|stop>");
+            controller.sendMessage(Component
+                .text("Usage: /" + label + " <control|stop>", NamedTextColor.RED));
         } else if (args[0].equalsIgnoreCase("control")) {
             controlCommand(controller, label, args);
         } else if (args[0].equalsIgnoreCase("stop")) {

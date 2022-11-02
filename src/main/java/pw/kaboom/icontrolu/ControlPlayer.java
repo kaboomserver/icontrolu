@@ -23,6 +23,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
+import net.kyori.adventure.text.Component;
+
 import pw.kaboom.icontrolu.utilities.PlayerList;
 
 class Tick extends BukkitRunnable {
@@ -228,12 +230,12 @@ class ControlPlayer implements Listener {
                         }
 
                         controller.removePotionEffect(PotionEffectType.INVISIBILITY);
-                        controller.sendMessage("You are now visible");
+                        controller.sendMessage(Component.text("You are now visible"));
                     }
                 }.runTaskLater(JavaPlugin.getPlugin(Main.class), tickDelay);
 
-                otherPlayer.sendMessage("The player you were controlling has disconnected. "
-                                        + "You are invisible for 10 seconds.");
+                otherPlayer.sendMessage(Component.text("The player you were controlling has "
+                                        + "disconnected. You are invisible for 10 seconds."));
 
             } else if (PlayerList.getTarget(player.getUniqueId()) != null
                     && PlayerList.getTarget(player.getUniqueId()).equals(otherPlayer)) {

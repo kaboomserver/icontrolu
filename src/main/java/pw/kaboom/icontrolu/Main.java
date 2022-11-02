@@ -7,6 +7,8 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
+import net.kyori.adventure.text.Component;
+
 import pw.kaboom.icontrolu.commands.CommandIcu;
 import pw.kaboom.icontrolu.utilities.PlayerList;
 
@@ -45,8 +47,11 @@ public final class Main extends JavaPlugin {
                 }
 
                 controller.removePotionEffect(PotionEffectType.INVISIBILITY);
-                controller.sendMessage("You are no longer controlling \"" + target.getName()
-                                       + "\" due to server reload");
+                controller.sendMessage(
+                    Component.text("You are no longer controlling \"")
+                        .append(Component.text(target.getName()))
+                        .append(Component.text("\" due to server reload"))
+                );
             }
         }
     }
