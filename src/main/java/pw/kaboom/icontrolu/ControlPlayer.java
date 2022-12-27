@@ -102,13 +102,15 @@ class Tick extends BukkitRunnable {
 }
 
 class ControlPlayer implements Listener {
+    private static String CHAT_PREFIX = "\ud800iControlUChat\ud800";
+
     @EventHandler
     private void onAsyncPlayerChat(final AsyncPlayerChatEvent event) {
         final Player player = event.getPlayer();
 
         if (PlayerList.getController(player.getUniqueId()) != null) {
-            if (event.getMessage().startsWith("§iControlUChat§")) {
-                final int prefixLength = "§iControlUChat§".length();
+            if (event.getMessage().startsWith(CHAT_PREFIX)) {
+                final int prefixLength = CHAT_PREFIX.length();
 
                 event.setMessage(
                     event.getMessage().substring(prefixLength)
@@ -124,7 +126,7 @@ class ControlPlayer implements Listener {
                 @Override
                 public void run() {
                     // Add prefix to prevent messages from being cancelled
-                    target.chat("§iControlUChat§" + event.getMessage());
+                    target.chat(CHAT_PREFIX + event.getMessage());
                 }
             }.runTask(JavaPlugin.getPlugin(Main.class));
 
