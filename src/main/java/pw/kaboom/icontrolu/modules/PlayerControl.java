@@ -84,6 +84,10 @@ public final class PlayerControl implements Listener {
         return targets.get(playerUUID);
     }
 
+    public static int getVisibilityDelay() {
+        return VISIBILITY_DELAY_MS / 1000;
+    }
+
     public static void removeController(final UUID playerUUID) {
         controllers.remove(playerUUID);
     }
