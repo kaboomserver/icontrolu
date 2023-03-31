@@ -10,7 +10,6 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
@@ -85,28 +84,9 @@ public final class CommandIcu implements CommandExecutor {
         if (target != null) {
             PlayerList.removeTarget(controller.getUniqueId());
             PlayerList.removeController(target.getUniqueId());
+            PlayerList.scheduleVisibility(controller.getUniqueId());
 
-            final int tickDelay = 200;
-
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    for (Player player: Bukkit.getOnlinePlayers()) {
-                        player.showPlayer(JavaPlugin.getPlugin(Main.class), controller);
-                    }
-
-                    Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-                    Team team = scoreboard.getTeam("icuCollision");
-                    if (team != null && team.hasEntry(controller.getName())) {
-                        team.removeEntry(controller.getName());
-                    }
-
-                    controller.removePotionEffect(PotionEffectType.INVISIBILITY);
-                    controller.sendMessage(Component.text("You are now visible"));
-                }
-            }.runTaskLater(JavaPlugin.getPlugin(Main.class), tickDelay);
-
-            final int seconds = tickDelay / 20;
+            final int seconds = 10;
 
             controller.sendMessage(
                 Component.text("You are no longer controlling \"")
