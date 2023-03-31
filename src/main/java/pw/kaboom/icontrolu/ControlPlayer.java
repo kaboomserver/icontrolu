@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -23,83 +24,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
+import com.destroystokyo.paper.event.server.ServerTickStartEvent;
+
 import net.kyori.adventure.text.Component;
 
 import pw.kaboom.icontrolu.utilities.PlayerList;
-
-class Tick extends BukkitRunnable {
-    @Override
-    @SuppressWarnings("deprecation")
-    public void run() {
-        for (Player target: Bukkit.getOnlinePlayers()) {
-            final Player controller = PlayerList.getController(target.getUniqueId());
-
-            if (controller != null) {
-                for (int i = 0; i < controller.getInventory().getSize(); i++) {
-                    if (controller.getInventory().getItem(i) != null) {
-                        if (!controller.getInventory().getItem(i).equals(
-                                target.getInventory().getItem(i))) {
-                            target.getInventory().setItem(i, controller.getInventory().getItem(i));
-                        }
-                    } else {
-                        target.getInventory().setItem(i, null);
-                    }
-                }
-
-                if (target.getHealth() > 0) {
-                    target.teleportAsync(controller.getLocation());
-                }
-
-                target.setAllowFlight(controller.getAllowFlight());
-                target.setExhaustion(controller.getExhaustion());
-                target.setFlying(controller.isFlying());
-                target.setFoodLevel(controller.getFoodLevel());
-
-                if (controller.getMaxHealth() > 0) {
-                    target.setMaxHealth(controller.getMaxHealth());
-                    target.setHealth(controller.getHealth());
-                }
-
-                target.setLevel(controller.getLevel());
-                target.setSneaking(controller.isSneaking());
-                target.setSprinting(controller.isSprinting());
-
-                for (Player player: Bukkit.getOnlinePlayers()) {
-                    player.hidePlayer(JavaPlugin.getPlugin(Main.class), controller);
-                }
-
-                final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-                Team team = scoreboard.getTeam("icuCollision");
-
-                if (team == null) {
-                    team = scoreboard.registerNewTeam("icuCollision");
-                }
-
-                team.setCanSeeFriendlyInvisibles(false);
-                team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
-
-                if (!team.hasEntry(controller.getName())) {
-                    team.addEntry(controller.getName());
-                }
-
-                final int duration = 99999;
-                final int amplifier = 0;
-                final boolean ambient = false;
-                final boolean particles = false;
-
-                controller.addPotionEffect(
-                    new PotionEffect(
-                        PotionEffectType.INVISIBILITY,
-                        duration,
-                        amplifier,
-                        ambient,
-                        particles
-                    )
-                );
-            }
-        }
-    }
-}
 
 class ControlPlayer implements Listener {
     private static String CHAT_PREFIX = "\ud800iControlUChat\ud800";
@@ -258,6 +187,78 @@ class ControlPlayer implements Listener {
             final Player controller = PlayerList.getController(player.getUniqueId());
 
             controller.teleportAsync(player.getLocation());
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onTickStart(ServerTickStartEvent event) {
+        for (Player target: Bukkit.getOnlinePlayers()) {
+            final Player controller = PlayerList.getController(target.getUniqueId());
+
+            if (controller != null) {
+                for (int i = 0; i < controller.getInventory().getSize(); i++) {
+                    if (controller.getInventory().getItem(i) != null) {
+                        if (!controller.getInventory().getItem(i).equals(
+                                target.getInventory().getItem(i))) {
+                            target.getInventory().setItem(i, controller.getInventory().getItem(i));
+                        }
+                    } else {
+                        target.getInventory().setItem(i, null);
+                    }
+                }
+
+                if (target.getHealth() > 0) {
+                    target.teleportAsync(controller.getLocation());
+                }
+
+                target.setAllowFlight(controller.getAllowFlight());
+                target.setExhaustion(controller.getExhaustion());
+                target.setFlying(controller.isFlying());
+                target.setFoodLevel(controller.getFoodLevel());
+
+                if (controller.getMaxHealth() > 0) {
+                    target.setMaxHealth(controller.getMaxHealth());
+                    target.setHealth(controller.getHealth());
+                }
+
+                target.setLevel(controller.getLevel());
+                target.setSneaking(controller.isSneaking());
+                target.setSprinting(controller.isSprinting());
+
+                for (Player player: Bukkit.getOnlinePlayers()) {
+                    player.hidePlayer(JavaPlugin.getPlugin(Main.class), controller);
+                }
+
+                final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+                Team team = scoreboard.getTeam("icuCollision");
+
+                if (team == null) {
+                    team = scoreboard.registerNewTeam("icuCollision");
+                }
+
+                team.setCanSeeFriendlyInvisibles(false);
+                team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+
+                if (!team.hasEntry(controller.getName())) {
+                    team.addEntry(controller.getName());
+                }
+
+                final int duration = 99999;
+                final int amplifier = 0;
+                final boolean ambient = false;
+                final boolean particles = false;
+
+                controller.addPotionEffect(
+                    new PotionEffect(
+                        PotionEffectType.INVISIBILITY,
+                        duration,
+                        amplifier,
+                        ambient,
+                        particles
+                    )
+                );
+            }
         }
     }
 }

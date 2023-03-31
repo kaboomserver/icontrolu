@@ -25,7 +25,6 @@ public final class Main extends JavaPlugin {
         /* Commands */
         this.getCommand("icu").setExecutor(new CommandIcu());
 
-        new Tick().runTaskTimer(this, 0, 1);
         this.getServer().getPluginManager().registerEvents(new ControlPlayer(), this);
     }
 
