@@ -1,6 +1,8 @@
 package pw.kaboom.icontrolu;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
@@ -31,19 +33,85 @@ import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 
 import net.kyori.adventure.text.Component;
 
-import pw.kaboom.icontrolu.utilities.PlayerList;
+public final class PlayerControl implements Listener {
 
-class ControlPlayer implements Listener {
-    private static String CHAT_PREFIX = "\ud800iControlUChat\ud800";
+    private static final String CHAT_PREFIX = "\ud800iControlUChat\ud800";
+    private static final int VISIBILITY_DELAY_MS = 10000;
+
+    private static Map<UUID, Player> controllers = new HashMap<>();
+    private static Map<UUID, Player> targets = new HashMap<>();
+    private static Map<UUID, Long> scheduledVisibilities = new HashMap<>();
+
+    public static void enable() {
+        /* Setup scoreboard team to prevent player collisions */
+        final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        final Team team = scoreboard.getTeam("icuCollision");
+        if (team != null) {
+            team.unregister();
+        }
+    }
+
+    public static void disable() {
+        for (UUID controllerUUID : targets.keySet()) {
+            final Player controller = Bukkit.getPlayer(controllerUUID);
+            final Player target = getTarget(controller.getUniqueId());
+
+            for (Player player: Bukkit.getOnlinePlayers()) {
+                player.showPlayer(JavaPlugin.getPlugin(Main.class), controller);
+            }
+
+            final Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+            final Team team = scoreboard.getTeam("icuCollision");
+
+            if (team != null) {
+                team.unregister();
+            }
+
+            controller.removePotionEffect(PotionEffectType.INVISIBILITY);
+            controller.sendMessage(
+                Component.text("You are no longer controlling \"")
+                    .append(Component.text(target.getName()))
+                    .append(Component.text("\" due to server reload"))
+            );
+        }
+    }
+
+    public static Player getController(final UUID playerUUID) {
+        return controllers.get(playerUUID);
+    }
+
+    public static Player getTarget(final UUID playerUUID) {
+        return targets.get(playerUUID);
+    }
+
+    public static void removeController(final UUID playerUUID) {
+        controllers.remove(playerUUID);
+    }
+
+    public static void removeTarget(final UUID playerUUID) {
+        targets.remove(playerUUID);
+    }
+
+    public static void setController(final UUID playerUUID, final Player player) {
+        controllers.put(playerUUID, player);
+    }
+
+    public static void setTarget(final UUID playerUUID, final Player player) {
+        targets.put(playerUUID, player);
+    }
+
+    public static void scheduleVisibility(final UUID playerUUID) {
+        scheduledVisibilities.put(playerUUID, System.currentTimeMillis() + VISIBILITY_DELAY_MS);
+    }
 
     private void controlPlayers() {
-        if (!PlayerList.hasControllers()) {
+        if (targets.isEmpty()) {
             return;
         }
 
-        for (UUID controllerUUID : PlayerList.getControllers()) {
+        for (UUID controllerUUID : targets.keySet()) {
             final Player controller = Bukkit.getPlayer(controllerUUID);
-            final Player target = PlayerList.getTarget(controllerUUID);
+            final Player target = getTarget(controllerUUID);
 
             for (int i = 0; i < controller.getInventory().getSize(); i++) {
                 if (controller.getInventory().getItem(i) != null) {
@@ -110,12 +178,11 @@ class ControlPlayer implements Listener {
     }
 
     private void checkVisibility() {
-        if (!PlayerList.hasScheduledVisibilities()) {
+        if (scheduledVisibilities.isEmpty()) {
             return;
         }
 
-        Iterator<Entry<UUID, Long>> iterator = PlayerList.getScheduledVisibilities().entrySet()
-            .iterator();
+        Iterator<Entry<UUID, Long>> iterator = scheduledVisibilities.entrySet().iterator();
 
         while (iterator.hasNext()) {
             final Entry<UUID, Long> entry = iterator.next();
@@ -149,7 +216,7 @@ class ControlPlayer implements Listener {
     private void onEntityDamage(final EntityDamageEvent event) {
         final Entity player = event.getEntity();
 
-        if (PlayerList.getTarget(player.getUniqueId()) != null) {
+        if (getTarget(player.getUniqueId()) != null) {
             event.setCancelled(true);
         }
     }
@@ -158,7 +225,7 @@ class ControlPlayer implements Listener {
     private void onPlayerAnimation(final PlayerAnimationEvent event) {
         final Player player = event.getPlayer();
 
-        if (PlayerList.getController(player.getUniqueId()) != null) {
+        if (getController(player.getUniqueId()) != null) {
             event.setCancelled(true);
         }
     }
@@ -168,7 +235,7 @@ class ControlPlayer implements Listener {
         final Player player = event.getPlayer();
         final UUID playerUUID = player.getUniqueId();
 
-        if (PlayerList.getController(playerUUID) != null) {
+        if (getController(playerUUID) != null) {
             if (event.getMessage().startsWith(CHAT_PREFIX)) {
                 event.setMessage(event.getMessage().substring(CHAT_PREFIX.length()));
                 return;
@@ -177,7 +244,7 @@ class ControlPlayer implements Listener {
             return;
         }
 
-        final Player target = PlayerList.getTarget(playerUUID);
+        final Player target = getTarget(playerUUID);
 
         if (target != null) {
             target.chat(CHAT_PREFIX + event.getMessage());
@@ -189,7 +256,7 @@ class ControlPlayer implements Listener {
     private void onPlayerCommandPreprocess(final PlayerCommandPreprocessEvent event) {
         final Player player = event.getPlayer();
 
-        if (PlayerList.getController(player.getUniqueId()) != null) {
+        if (getController(player.getUniqueId()) != null) {
             event.setCancelled(true);
         }
     }
@@ -198,7 +265,7 @@ class ControlPlayer implements Listener {
     private void onPlayerDropItem(final PlayerDropItemEvent event) {
         final Player player = event.getPlayer();
 
-        if (PlayerList.getController(player.getUniqueId()) != null) {
+        if (getController(player.getUniqueId()) != null) {
             event.setCancelled(true);
         }
     }
@@ -207,13 +274,13 @@ class ControlPlayer implements Listener {
     private void onPlayerInteract(final PlayerInteractEvent event) {
         final Player player = event.getPlayer();
 
-        if (PlayerList.getController(player.getUniqueId()) != null) {
+        if (getController(player.getUniqueId()) != null) {
             event.setCancelled(true);
 
         } else if ((event.getAction() == Action.LEFT_CLICK_AIR
                 || event.getAction() == Action.LEFT_CLICK_BLOCK)
-                && PlayerList.getTarget(player.getUniqueId()) != null) {
-            final Player target = PlayerList.getTarget(player.getUniqueId());
+                && getTarget(player.getUniqueId()) != null) {
+            final Player target = getTarget(player.getUniqueId());
 
             if (event.getHand() == EquipmentSlot.HAND) {
                 target.swingMainHand();
@@ -227,7 +294,7 @@ class ControlPlayer implements Listener {
     private void onPlayerMove(final PlayerMoveEvent event) {
         final Player player = event.getPlayer();
 
-        if (PlayerList.getController(player.getUniqueId()) != null) {
+        if (getController(player.getUniqueId()) != null) {
             event.setCancelled(true);
         }
     }
@@ -236,39 +303,38 @@ class ControlPlayer implements Listener {
     private void onPlayerQuit(final PlayerQuitEvent event) {
         final Player player = event.getPlayer();
         final UUID playerUUID = player.getUniqueId();
-        final Player controller = PlayerList.getController(playerUUID);
+        final Player controller = getController(playerUUID);
 
         if (controller != null) {
             /*
               Target disconnects
               */
-            PlayerList.removeTarget(controller.getUniqueId());
-            PlayerList.removeController(playerUUID);
-            PlayerList.scheduleVisibility(controller.getUniqueId());
+            removeTarget(controller.getUniqueId());
+            removeController(playerUUID);
+            scheduleVisibility(controller.getUniqueId());
 
             controller.sendMessage(Component.text("The player you were controlling has "
                                    + "disconnected. You are invisible for 10 seconds."));
             return;
         }
 
-        final Player target = PlayerList.getTarget(playerUUID);
+        final Player target = getTarget(playerUUID);
 
         if (target != null) {
             /*
               Controller disconnects
               */
-            PlayerList.removeTarget(playerUUID);
-            PlayerList.removeController(target.getUniqueId());
+            removeTarget(playerUUID);
+            removeController(target.getUniqueId());
         }
     }
 
     @EventHandler
     private void onPlayerRespawn(final PlayerRespawnEvent event) {
         final Player player = event.getPlayer();
+        final Player controller = getController(player.getUniqueId());
 
-        if (PlayerList.getController(player.getUniqueId()) != null) {
-            final Player controller = PlayerList.getController(player.getUniqueId());
-
+        if (controller != null) {
             controller.teleportAsync(player.getLocation());
         }
     }

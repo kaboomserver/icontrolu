@@ -17,7 +17,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import pw.kaboom.icontrolu.Main;
-import pw.kaboom.icontrolu.utilities.PlayerList;
+import pw.kaboom.icontrolu.PlayerControl;
 
 public final class CommandIcu implements CommandExecutor {
     private void controlCommand(final Player controller, final String label, final String[] args) {
@@ -34,19 +34,19 @@ public final class CommandIcu implements CommandExecutor {
             if (target != null) {
                 if (target == controller) {
                     controller.sendMessage(Component.text("You are already controlling yourself"));
-                } else if (PlayerList.getTarget(controller.getUniqueId()) != null) {
+                } else if (PlayerControl.getTarget(controller.getUniqueId()) != null) {
                     controller.sendMessage(
                         Component.text("You are already controlling \"")
                             .append(Component.text(target.getName()))
                             .append(Component.text("\""))
                         );
-                } else if (PlayerList.getController(target.getUniqueId()) != null) {
+                } else if (PlayerControl.getController(target.getUniqueId()) != null) {
                     controller.sendMessage(
                         Component.text("Player \"")
                             .append(Component.text(target.getName()))
                             .append(Component.text("\" is already being controlled"))
                     );
-                } else if (PlayerList.getTarget(target.getUniqueId()) != null) {
+                } else if (PlayerControl.getTarget(target.getUniqueId()) != null) {
                     controller.sendMessage(
                         Component.text("Player \"")
                             .append(Component.text(target.getName()))
@@ -59,8 +59,8 @@ public final class CommandIcu implements CommandExecutor {
 
                     controller.getInventory().setContents(target.getInventory().getContents());
 
-                    PlayerList.setTarget(controller.getUniqueId(), target);
-                    PlayerList.setController(target.getUniqueId(), controller);
+                    PlayerControl.setTarget(controller.getUniqueId(), target);
+                    PlayerControl.setController(target.getUniqueId(), controller);
 
                     controller.sendMessage(
                         Component.text("You are now controlling \"")
@@ -79,12 +79,12 @@ public final class CommandIcu implements CommandExecutor {
     }
 
     private void stopCommand(final Player controller) {
-        final Player target = PlayerList.getTarget(controller.getUniqueId());
+        final Player target = PlayerControl.getTarget(controller.getUniqueId());
 
         if (target != null) {
-            PlayerList.removeTarget(controller.getUniqueId());
-            PlayerList.removeController(target.getUniqueId());
-            PlayerList.scheduleVisibility(controller.getUniqueId());
+            PlayerControl.removeTarget(controller.getUniqueId());
+            PlayerControl.removeController(target.getUniqueId());
+            PlayerControl.scheduleVisibility(controller.getUniqueId());
 
             final int seconds = 10;
 
