@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
           cache: maven
 
       - name: Build with Maven
@@ -25,12 +25,33 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          path: target/iControlU.jar
+          path: target/*.jar
+          if-no-files-found: error
           archive: false
 
-  release:
-    if: github.repository == 'kaboomserver/icontrolu' && github.ref == 'refs/heads/master'
+  attestation:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: build
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    permissions:
+      id-token: write
+      attestations: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: dist/
+          merge-multiple: true
+
+      - name: Attest
+        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
+        with:
+          subject-path: dist/
+
+  release:
+    if: github.event.repository.fork == false && github.ref_name == github.event.repository.default_branch
+    needs: attestation
     runs-on: ubuntu-slim
     timeout-minutes: 15
     permissions:
