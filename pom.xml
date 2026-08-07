@@ -9,6 +9,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.test.skip>true</maven.test.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.outputTimestamp>1980-02-01T00:00:00Z</project.build.outputTimestamp>
     </properties>
 
     <dependencies>
