@@ -9,6 +9,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.test.skip>true</maven.test.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.outputTimestamp>1980-02-01T00:00:00Z</project.build.outputTimestamp>
     </properties>
 
     <dependencies>
@@ -33,7 +34,7 @@
 	    <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
+                <version>3.5.1</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
@@ -45,7 +46,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <id>checkstyle</id>
