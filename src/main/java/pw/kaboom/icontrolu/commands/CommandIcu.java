@@ -50,12 +50,12 @@ public final class CommandIcu implements CommandExecutor {
         }
 
         final ControlManager manager = controlModule.manager;
-        if (manager.hasController(controller.getUniqueId())) {
+        if (manager.isController(controller.getUniqueId())) {
             controller.sendMessage(Component.text("You are already controlling someone"));
             return;
         }
 
-        if (manager.hasTarget(target.getUniqueId())) {
+        if (manager.isTarget(target.getUniqueId())) {
             controller.sendMessage(
                 Component.text("Player \"")
                     .append(Component.text(target.getName()))
@@ -64,7 +64,7 @@ public final class CommandIcu implements CommandExecutor {
             return;
         }
 
-        if (manager.hasController(target.getUniqueId())) {
+        if (manager.isController(target.getUniqueId())) {
             controller.sendMessage(
                 Component.text("Player \"")
                     .append(Component.text(target.getName()))

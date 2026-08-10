@@ -187,7 +187,7 @@ public final class PlayerControl implements Listener {
     private void onEntityDamage(final EntityDamageEvent event) {
         final Entity player = event.getEntity();
 
-        if (manager.hasController(player.getUniqueId())) {
+        if (manager.isController(player.getUniqueId())) {
             event.setCancelled(true);
         }
     }
@@ -196,7 +196,7 @@ public final class PlayerControl implements Listener {
     private void onPlayerAnimation(final PlayerAnimationEvent event) {
         final Player player = event.getPlayer();
 
-        if (manager.hasTarget(player.getUniqueId())) {
+        if (manager.isTarget(player.getUniqueId())) {
             event.setCancelled(true);
         }
     }
@@ -206,7 +206,7 @@ public final class PlayerControl implements Listener {
         final Player player = event.getPlayer();
         final UUID playerUUID = player.getUniqueId();
 
-        if (manager.hasTarget(playerUUID)) {
+        if (manager.isTarget(playerUUID)) {
             if (event.getMessage().startsWith(CHAT_PREFIX)) {
                 event.setMessage(event.getMessage().substring(CHAT_PREFIX.length()));
                 return;
@@ -226,7 +226,7 @@ public final class PlayerControl implements Listener {
     private void onPlayerCommandPreprocess(final PlayerCommandPreprocessEvent event) {
         final Player player = event.getPlayer();
 
-        if (manager.hasTarget(player.getUniqueId())) {
+        if (manager.isTarget(player.getUniqueId())) {
             event.setCancelled(true);
         }
     }
@@ -235,7 +235,7 @@ public final class PlayerControl implements Listener {
     private void onPlayerDropItem(final PlayerDropItemEvent event) {
         final Player player = event.getPlayer();
 
-        if (manager.hasTarget(player.getUniqueId())) {
+        if (manager.isTarget(player.getUniqueId())) {
             event.setCancelled(true);
         }
     }
@@ -244,7 +244,7 @@ public final class PlayerControl implements Listener {
     private void onPlayerInteract(final PlayerInteractEvent event) {
         final Player player = event.getPlayer();
 
-        if (manager.hasTarget(player.getUniqueId())) {
+        if (manager.isTarget(player.getUniqueId())) {
             event.setCancelled(true);
             return;
         }
@@ -265,7 +265,7 @@ public final class PlayerControl implements Listener {
     private void onPlayerMove(final PlayerMoveEvent event) {
         final Player player = event.getPlayer();
 
-        if (manager.hasTarget(player.getUniqueId())) {
+        if (manager.isTarget(player.getUniqueId())) {
             event.setCancelled(true);
         }
     }

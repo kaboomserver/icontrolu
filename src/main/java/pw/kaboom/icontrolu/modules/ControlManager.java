@@ -17,11 +17,11 @@ public final class ControlManager {
         map.put(controller.getUniqueId(), target.getUniqueId());
     }
 
-    public boolean hasController(final UUID controllerUUID) {
+    public boolean isController(final UUID controllerUUID) {
         return map.containsKey(controllerUUID);
     }
 
-    public boolean hasTarget(final UUID targetUUID) {
+    public boolean isTarget(final UUID targetUUID) {
         return map.containsValue(targetUUID);
     }
 
