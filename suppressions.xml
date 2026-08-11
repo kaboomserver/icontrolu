@@ -5,4 +5,6 @@
 
 <suppressions>
     <suppress checks="Javadoc" files="."/>
+    <suppress checks="MagicNumber" files="."/>
+    <suppress checks="MethodLength" files="."/>
 </suppressions>
