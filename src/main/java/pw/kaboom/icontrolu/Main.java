@@ -15,9 +15,9 @@ public final class Main extends JavaPlugin {
     public void onEnable() {
         /* Commands */
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
-            Commands registrar = event.registrar();
-            CommandIcu command = new CommandIcu(controlModule);
-            LiteralArgumentBuilder<CommandSourceStack> builder
+            final Commands registrar = event.registrar();
+            final CommandIcu command = new CommandIcu(controlModule);
+            final LiteralArgumentBuilder<CommandSourceStack> builder
                     = Commands.literal("icu");
             command.build(builder);
             registrar.register(
