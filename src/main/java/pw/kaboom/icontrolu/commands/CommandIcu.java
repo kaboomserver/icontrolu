@@ -1,142 +1,140 @@
 package pw.kaboom.icontrolu.commands;
 
-import java.util.UUID;
-
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.entity.Player;
-
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.LiteralMessage;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-
+import org.bukkit.entity.Player;
 import pw.kaboom.icontrolu.modules.ControlManager;
 import pw.kaboom.icontrolu.modules.PlayerControl;
 
-public final class CommandIcu implements CommandExecutor {
+import static io.papermc.paper.command.brigadier.Commands.*;
+import static io.papermc.paper.command.brigadier.argument.ArgumentTypes.player;
+
+public final class CommandIcu {
+    private static final SimpleCommandExceptionType EX_NOT_CONTROLLING =
+            new SimpleCommandExceptionType(
+                    new LiteralMessage("You are not controlling anyone at the moment")
+            );
+    private static final SimpleCommandExceptionType EX_TARGET_SELF =
+            new SimpleCommandExceptionType(
+                    new LiteralMessage("You are already controlling yourself")
+            );
+    private static final DynamicCommandExceptionType EX_ALREADY_IN_CONTROL =
+            new DynamicCommandExceptionType(player ->
+                    new LiteralMessage(
+                            "You are already controlling \"" +
+                                    getPlayerName(player) +
+                                    "\""
+                    )
+            );
+    private static final DynamicCommandExceptionType EX_CONTROL_BY_OTHER =
+            new DynamicCommandExceptionType(player ->
+                    new LiteralMessage(
+                            "Player \"" +
+                                    getPlayerName(player) +
+                                    "\" is already being controlled"
+                    )
+            );
+    private static final SimpleCommandExceptionType EX_CANTSEE =
+            new SimpleCommandExceptionType(
+                    new LiteralMessage("You may not control this player")
+            );
     private final PlayerControl controlModule;
 
     public CommandIcu(final PlayerControl controlModule) {
         this.controlModule = controlModule;
     }
 
-    private void controlCommand(final Player controller, final String label, final String[] args) {
-        if (args.length == 1) {
-            controller.sendMessage(Component
-                .text("Usage: /" + label + " control <player>", NamedTextColor.RED));
-            return;
-        }
+    public void build(final LiteralArgumentBuilder<CommandSourceStack> builder) {
+        builder
+                .requires(restricted(src ->
+                        src.getSender().hasPermission("icu.command")
+                                && src.getSender() instanceof Player
+                ))
+                .then(literal("stop")
+                        .executes(ctx -> {
+                            final Player controller = getPlayer(ctx);
+                            final Player target = controlModule.manager.removeController(
+                                    controller.getUniqueId()
+                            );
 
-        Player target = Bukkit.getPlayer(args[1]);
+                            if (target == null) {
+                                throw EX_NOT_CONTROLLING.create();
+                            }
+                            controlModule.scheduleVisibility(controller.getUniqueId());
+                            controller.sendMessage(
+                                    Component.text("You are no longer controlling \"")
+                                            .append(Component.text(target.getName()))
+                                            .append(Component.text("\". You are invisible for "))
+                                            .append(Component.text(
+                                                    PlayerControl.getVisibilityDelay()
+                                            ))
+                                            .append(Component.text(" seconds."))
+                            );
+                            return Command.SINGLE_SUCCESS;
+                        })
+                )
+                .then(literal("control")
+                        .then(argument("player", player())
+                                .executes(ctx -> {
+                                    final PlayerSelectorArgumentResolver resolver = ctx.getArgument(
+                                            "player",
+                                            PlayerSelectorArgumentResolver.class
+                                    );
+                                    final Player target =
+                                            resolver.resolve(ctx.getSource()).getFirst();
+                                    final Player controller = getPlayer(ctx);
 
-        if (target == null && args[1].matches("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})")) {
-            target = Bukkit.getPlayer(UUID.fromString(args[1]));
-        }
+                                    if (target == controller) {
+                                        throw EX_TARGET_SELF.create();
+                                    }
 
-        if (target == null) {
-            controller.sendMessage(
-                Component.text("Player \"")
-                    .append(Component.text(args[1]))
-                    .append(Component.text("\" not found"))
-            );
-            return;
-        }
+                                    final ControlManager manager = controlModule.manager;
+                                    final Player otherTarget =
+                                            manager.getTarget(controller.getUniqueId());
+                                    if (otherTarget != null) {
+                                        throw EX_ALREADY_IN_CONTROL.create(otherTarget);
+                                    }
 
-        if (target == controller) {
-            controller.sendMessage(Component.text("You are already controlling yourself"));
-            return;
-        }
+                                    if (manager.isTarget(target.getUniqueId())) {
+                                        throw EX_CONTROL_BY_OTHER.create(target);
+                                    }
 
-        final ControlManager manager = controlModule.manager;
-        final Player otherTarget = manager.getTarget(controller.getUniqueId());
-        if (otherTarget != null) {
-            controller.sendMessage(
-                Component.text("You are already controlling \"")
-                    .append(Component.text(otherTarget.getName()))
-                    .append(Component.text("\""))
-            );
-            return;
-        }
+                                    if (!controller.canSee(target)) {
+                                        throw EX_CANTSEE.create();
+                                    }
 
-        if (manager.isTarget(target.getUniqueId())) {
-            controller.sendMessage(
-                Component.text("Player \"")
-                    .append(Component.text(target.getName()))
-                    .append(Component.text("\" is already being controlled"))
-            );
-            return;
-        }
+                                    controller.teleportAsync(target.getLocation());
+                                    controller.getInventory().setContents(
+                                            target.getInventory().getContents()
+                                    );
+                                    manager.control(controller, target);
+                                    controller.sendMessage(
+                                            Component.text("You are now controlling \"")
+                                                    .append(Component.text(target.getName()))
+                                                    .append(Component.text("\""))
+                                    );
 
-        if (manager.isController(target.getUniqueId())) {
-            controller.sendMessage(
-                Component.text("Player \"")
-                    .append(Component.text(target.getName()))
-                    .append(Component.text("\" is already controlling another player"))
-            );
-            return;
-        }
-
-        if (!controller.canSee(target)) {
-            controller.sendMessage(Component.text("You may not control this player"));
-            return;
-        }
-
-        controller.teleportAsync(target.getLocation());
-        controller.getInventory().setContents(target.getInventory().getContents());
-
-        manager.control(controller, target);
-        controller.sendMessage(
-            Component.text("You are now controlling \"")
-                .append(Component.text(target.getName()))
-                .append(Component.text("\""))
-        );
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+                );
     }
 
-    private void stopCommand(final Player controller) {
-        final Player target = controlModule.manager.removeController(controller.getUniqueId());
-
-        if (target == null) {
-            controller.sendMessage(Component.text("You are not controlling anyone at the moment"));
-            return;
-        }
-
-        controlModule.scheduleVisibility(controller.getUniqueId());
-
-        controller.sendMessage(
-            Component.text("You are no longer controlling \"")
-                .append(Component.text(target.getName()))
-                .append(Component.text("\". You are invisible for "))
-                .append(Component.text(PlayerControl.getVisibilityDelay()))
-                .append(Component.text(" seconds."))
-        );
+    private static Player getPlayer(CommandContext<CommandSourceStack> ctx) {
+        return (Player) ctx.getSource().getSender();
     }
 
-    @Override
-    public boolean onCommand(final CommandSender sender, final Command command, final String label,
-                             final String[] args) {
-        if (sender instanceof ConsoleCommandSender) {
-            sender.sendMessage(Component.text("Command has to be run by a player"));
-            return true;
+    private static String getPlayerName(Object player) {
+        if (player instanceof Player player1) {
+            return player1.getName();
         }
-
-        final Player controller = (Player) sender;
-
-        if (args.length == 0) {
-            controller.sendMessage(Component
-                .text("Usage: /" + label + " <control|stop>", NamedTextColor.RED));
-            return true;
-        }
-
-        if (args[0].equalsIgnoreCase("control")) {
-            controlCommand(controller, label, args);
-            return true;
-        }
-
-        if (args[0].equalsIgnoreCase("stop")) {
-            stopCommand(controller);
-        }
-        return true;
+        throw new IllegalArgumentException("player must be an object");
     }
 }
