@@ -1,12 +1,13 @@
 package pw.kaboom.icontrolu.modules;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.UUID;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,7 +16,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
-import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -36,6 +36,8 @@ import pw.kaboom.icontrolu.Main;
 
 public final class PlayerControl implements Listener {
 
+    private static final PlainTextComponentSerializer SERIALIZER =
+            PlainTextComponentSerializer.plainText();
     private static final String CHAT_PREFIX = "\ud800iControlUChat\ud800";
     private static final int VISIBILITY_DELAY_MS = 10000;
 
@@ -85,8 +87,10 @@ public final class PlayerControl implements Listener {
         manager.forEach((controller, target) -> {
             for (int i = 0; i < controller.getInventory().getSize(); i++) {
                 if (controller.getInventory().getItem(i) != null) {
-                    if (!controller.getInventory().getItem(i).equals(
-                            target.getInventory().getItem(i))) {
+                    if (!Objects.equals(
+                            controller.getInventory().getItem(i),
+                            target.getInventory().getItem(i))
+                    ) {
                         target.getInventory().setItem(i, controller.getInventory().getItem(i));
                     }
                 } else {
@@ -103,8 +107,9 @@ public final class PlayerControl implements Listener {
             target.setFlying(controller.isFlying());
             target.setFoodLevel(controller.getFoodLevel());
 
-            if (controller.getMaxHealth() > 0) {
-                target.setMaxHealth(controller.getMaxHealth());
+            AttributeInstance health = controller.getAttribute(Attribute.MAX_HEALTH);
+            if (health != null) {
+                target.registerAttribute(health.getAttribute());
                 target.setHealth(controller.getHealth());
             }
 
@@ -202,13 +207,14 @@ public final class PlayerControl implements Listener {
     }
 
     @EventHandler
-    private void onPlayerChat(final PlayerChatEvent event) {
+    private void onPlayerChat(final AsyncChatEvent event) {
         final Player player = event.getPlayer();
         final UUID playerUUID = player.getUniqueId();
+        final String plaintextMessage = SERIALIZER.serialize(event.message());
 
         if (manager.isTarget(playerUUID)) {
-            if (event.getMessage().startsWith(CHAT_PREFIX)) {
-                event.setMessage(event.getMessage().substring(CHAT_PREFIX.length()));
+            if (plaintextMessage.startsWith(CHAT_PREFIX)) {
+                event.message(Component.text(plaintextMessage.substring(CHAT_PREFIX.length())));
                 return;
             }
             event.setCancelled(true);
@@ -217,7 +223,7 @@ public final class PlayerControl implements Listener {
 
         final Player target = manager.getTarget(playerUUID);
         if (target != null) {
-            target.chat(CHAT_PREFIX + event.getMessage());
+            target.chat(CHAT_PREFIX + plaintextMessage);
             event.setCancelled(true);
         }
     }
