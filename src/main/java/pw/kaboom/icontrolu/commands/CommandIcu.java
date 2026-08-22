@@ -27,19 +27,11 @@ public final class CommandIcu {
             );
     private static final DynamicCommandExceptionType EX_ALREADY_IN_CONTROL =
             new DynamicCommandExceptionType(player ->
-                    new LiteralMessage(
-                            "You are already controlling \"" +
-                                    getPlayerName(player) +
-                                    "\""
-                    )
+                    new LiteralMessage("You are already controlling \"" + player + "\"")
             );
     private static final DynamicCommandExceptionType EX_CONTROL_BY_OTHER =
             new DynamicCommandExceptionType(player ->
-                    new LiteralMessage(
-                            "Player \"" +
-                                    getPlayerName(player) +
-                                    "\" is already being controlled"
-                    )
+                    new LiteralMessage("Player \"" + player + "\" is already being controlled")
             );
     private static final SimpleCommandExceptionType EX_CANTSEE =
             new SimpleCommandExceptionType(
@@ -99,11 +91,11 @@ public final class CommandIcu {
                                     final Player otherTarget =
                                             manager.getTarget(controller.getUniqueId());
                                     if (otherTarget != null) {
-                                        throw EX_ALREADY_IN_CONTROL.create(otherTarget);
+                                        throw EX_ALREADY_IN_CONTROL.create(otherTarget.getName());
                                     }
 
                                     if (manager.isTarget(target.getUniqueId())) {
-                                        throw EX_CONTROL_BY_OTHER.create(target);
+                                        throw EX_CONTROL_BY_OTHER.create(target.getName());
                                     }
 
                                     if (!controller.canSee(target)) {
@@ -127,13 +119,7 @@ public final class CommandIcu {
                 );
     }
 
-    private static Player getPlayer(CommandContext<CommandSourceStack> ctx) {
+    private static Player getPlayer(final CommandContext<CommandSourceStack> ctx) {
         return (Player) ctx.getSource().getSender();
-    }
-    private static String getPlayerName(Object player) {
-        if (player instanceof Player player1) {
-            return player1.getName();
-        }
-        throw new IllegalArgumentException("player must be an object");
     }
 }
