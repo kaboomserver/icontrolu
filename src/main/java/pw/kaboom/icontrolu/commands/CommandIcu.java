@@ -14,6 +14,7 @@ import pw.kaboom.icontrolu.modules.ControlManager;
 import pw.kaboom.icontrolu.modules.PlayerControl;
 
 import static io.papermc.paper.command.brigadier.Commands.*;
+import static pw.kaboom.icontrolu.commands.arguments.PlayerOrUUIDArgumentType.getPlayer;
 import static pw.kaboom.icontrolu.commands.arguments.PlayerOrUUIDArgumentType.playerOrUUID;
 
 public final class CommandIcu {
@@ -51,7 +52,7 @@ public final class CommandIcu {
                 ))
                 .then(literal("stop")
                         .executes(ctx -> {
-                            final Player controller = getPlayer(ctx);
+                            final Player controller = getSender(ctx);
                             final Player target = controlModule.manager.removeController(
                                     controller.getUniqueId()
                             );
@@ -75,13 +76,8 @@ public final class CommandIcu {
                 .then(literal("control")
                         .then(argument("player", playerOrUUID())
                                 .executes(ctx -> {
-                                    final PlayerSelectorArgumentResolver resolver = ctx.getArgument(
-                                            "player",
-                                            PlayerSelectorArgumentResolver.class
-                                    );
-                                    final Player target =
-                                            resolver.resolve(ctx.getSource()).getFirst();
-                                    final Player controller = getPlayer(ctx);
+                                    final Player target = getPlayer(ctx, "player");
+                                    final Player controller = getSender(ctx);
 
                                     if (target == controller) {
                                         throw EX_TARGET_SELF.create();
@@ -119,7 +115,7 @@ public final class CommandIcu {
                 );
     }
 
-    private static Player getPlayer(final CommandContext<CommandSourceStack> ctx) {
+    private static Player getSender(final CommandContext<CommandSourceStack> ctx) {
         return (Player) ctx.getSource().getSender();
     }
 }
