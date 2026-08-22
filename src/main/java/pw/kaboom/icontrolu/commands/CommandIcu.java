@@ -14,7 +14,7 @@ import pw.kaboom.icontrolu.modules.ControlManager;
 import pw.kaboom.icontrolu.modules.PlayerControl;
 
 import static io.papermc.paper.command.brigadier.Commands.*;
-import static io.papermc.paper.command.brigadier.argument.ArgumentTypes.player;
+import static pw.kaboom.icontrolu.commands.arguments.PlayerOrUUIDArgumentType.playerOrUUID;
 
 public final class CommandIcu {
     private static final SimpleCommandExceptionType EX_NOT_CONTROLLING =
@@ -81,7 +81,7 @@ public final class CommandIcu {
                         })
                 )
                 .then(literal("control")
-                        .then(argument("player", player())
+                        .then(argument("player", playerOrUUID())
                                 .executes(ctx -> {
                                     final PlayerSelectorArgumentResolver resolver = ctx.getArgument(
                                             "player",
@@ -130,7 +130,6 @@ public final class CommandIcu {
     private static Player getPlayer(CommandContext<CommandSourceStack> ctx) {
         return (Player) ctx.getSource().getSender();
     }
-
     private static String getPlayerName(Object player) {
         if (player instanceof Player player1) {
             return player1.getName();
