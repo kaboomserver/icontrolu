@@ -1,12 +1,12 @@
 package pw.kaboom.icontrolu.modules;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
-
+import com.destroystokyo.paper.event.server.ServerTickStartEvent;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.chat.SignedMessage;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,29 +14,19 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.PlayerAnimationEvent;
-import org.bukkit.event.player.PlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
-
-import com.destroystokyo.paper.event.server.ServerTickStartEvent;
-
-import net.kyori.adventure.text.Component;
 import pw.kaboom.icontrolu.Main;
 
-public final class PlayerControl implements Listener {
+import java.util.*;
+import java.util.Map.Entry;
 
-    private static final String CHAT_PREFIX = "\ud800iControlUChat\ud800";
+public final class PlayerControl implements Listener {
     private static final int VISIBILITY_DELAY_MS = 10000;
 
     private final Map<UUID, Long> scheduledVisibilities = new HashMap<>();
@@ -85,8 +75,10 @@ public final class PlayerControl implements Listener {
         manager.forEach((controller, target) -> {
             for (int i = 0; i < controller.getInventory().getSize(); i++) {
                 if (controller.getInventory().getItem(i) != null) {
-                    if (!controller.getInventory().getItem(i).equals(
-                            target.getInventory().getItem(i))) {
+                    if (!Objects.equals(
+                            controller.getInventory().getItem(i),
+                            target.getInventory().getItem(i))
+                    ) {
                         target.getInventory().setItem(i, controller.getInventory().getItem(i));
                     }
                 } else {
@@ -103,8 +95,9 @@ public final class PlayerControl implements Listener {
             target.setFlying(controller.isFlying());
             target.setFoodLevel(controller.getFoodLevel());
 
-            if (controller.getMaxHealth() > 0) {
-                target.setMaxHealth(controller.getMaxHealth());
+            final AttributeInstance health = controller.getAttribute(Attribute.MAX_HEALTH);
+            if (health != null) {
+                target.registerAttribute(health.getAttribute());
                 target.setHealth(controller.getHealth());
             }
 
@@ -202,22 +195,21 @@ public final class PlayerControl implements Listener {
     }
 
     @EventHandler
-    private void onPlayerChat(final PlayerChatEvent event) {
+    private void onPlayerChat(final AsyncChatEvent event) {
         final Player player = event.getPlayer();
         final UUID playerUUID = player.getUniqueId();
+        final SignedMessage message = event.signedMessage();
+        final boolean realMessage = !message.isSystem();
 
-        if (manager.isTarget(playerUUID)) {
-            if (event.getMessage().startsWith(CHAT_PREFIX)) {
-                event.setMessage(event.getMessage().substring(CHAT_PREFIX.length()));
-                return;
-            }
+        if (manager.isTarget(playerUUID) && realMessage) {
             event.setCancelled(true);
             return;
         }
 
         final Player target = manager.getTarget(playerUUID);
-        if (target != null) {
-            target.chat(CHAT_PREFIX + event.getMessage());
+        if (target != null && realMessage) {
+            Bukkit.getScheduler().runTask(JavaPlugin.getPlugin(Main.class),
+                () -> target.chat(message.message()));
             event.setCancelled(true);
         }
     }
