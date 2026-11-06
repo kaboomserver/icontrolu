@@ -6,9 +6,9 @@ The plugin is created for the Kaboom server.
 
 ## Commands
 
-| Command | Permission | Description |
-| ------- | ---------- | ----------- |
-|/icu | icu.command | Control another player's movements, inventory and chat|
+| Command | Permission  | Description                                            |
+|---------|-------------|--------------------------------------------------------|
+| /icu    | icu.command | Control another player's movements, inventory and chat |
 
 ## Compiling
 
